@@ -987,6 +987,8 @@ function stopPlay() {
   const btn = $('#play');
   btn.classList.remove('playing');
   btn.textContent = '▶ 변화 과정 보기';
+  // 멈출 때 가장 가까운 기록으로 정렬
+  applyIndex(Math.round(state.index));
 }
 
 function switchMode(mode) {
