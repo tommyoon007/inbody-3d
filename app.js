@@ -696,8 +696,6 @@ class Character3D {
       this.legs[side] = { sgn, hip, thigh, shortLeg, knee, shin, foot };
     }
 
-    // 별도 카메라 회전 없음
-    this._applyLimbScale(this.cur);
   }
 
   _torsoProfile(p) {
