@@ -89,7 +89,7 @@ function morphTargets(r) {
     armR: 0.040 + 0.009 * fat + 0.014 * mus,
     calfR: 0.045 + 0.008 * fat + 0.006 * mus,
     neckR: 0.048 + 0.008 * fat,
-    headW: 0.095 + 0.008 * fat,
+    headW: 0.101 + 0.008 * fat,
     faceFull: fat,
   };
 }
@@ -758,7 +758,7 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 1.10);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 1.00);
       a.shoulder.position.y = torsoH * 0.89;
       a.shoulderCap.scale.set(p.armR * 1.08, p.armR * 1.18, p.armR * 1.05);
       a.shoulderCap.position.set(a.sgn * p.armR * 0.15, -p.armR * 0.15, 0);
@@ -796,15 +796,15 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: -0.185, shRx: 0, shRz: 0.185, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: -0.21, shRx: 0, shRz: 0.21, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = -0.185 - b * 0.010;
-      p.shRz = 0.185 + b * 0.010;
+      p.shLz = -0.21 - b * 0.010;
+      p.shRz = 0.21 + b * 0.010;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
