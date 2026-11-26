@@ -250,7 +250,7 @@ const COLORS = {
   skin: 0xd9a07c,
   skinDark: 0xc98f6b,
   shirt: 0xb7bcc5,
-  shorts: 0x2b3c58,
+  shorts: 0x171b22,
   shoe: 0xeef1f4,
   hair: 0x14100f,
   floor: 0x0f1620,
@@ -452,9 +452,9 @@ class Character3D {
     body.add(hips);
     this.hips = hips;
 
-    /* --- 몸통(셔츠) --- */
+    /* --- 몸통 (상의 없이 피부) --- */
     this.torsoGeo = buildTubeGeometry(20, 30);
-    this.torso = new THREE.Mesh(this.torsoGeo, this.mat.shirt);
+    this.torso = new THREE.Mesh(this.torsoGeo, this.mat.skin);
     this.torso.castShadow = true;
     this.torso.receiveShadow = true;
     hips.add(this.torso);
@@ -520,11 +520,6 @@ class Character3D {
       const upper = makeLimb(this.mat.skin);
       shoulder.add(upper);
 
-      // 반소매
-      const sleeve = makeLimb(this.mat.shirt);
-      sleeve.position.y = -0.075;
-      shoulder.add(sleeve);
-
       const elbow = new THREE.Group();
       elbow.position.y = -0.30;
       shoulder.add(elbow);
@@ -536,7 +531,7 @@ class Character3D {
       hand.castShadow = true;
       elbow.add(hand);
 
-      this.arms[side] = { sgn, shoulder, upper, sleeve, elbow, fore, hand };
+      this.arms[side] = { sgn, shoulder, upper, elbow, fore, hand };
     }
 
     /* --- 반바지(골반) --- */
@@ -625,8 +620,6 @@ class Character3D {
       a.shoulder.position.x = a.sgn * (p.shoulder * 0.86);
       a.shoulder.position.y = torsoH - 0.055;
       setLimb(a.upper, p.armR, 0.30);
-      a.sleeve.scale.set(p.armR * 1.16, 0.055, p.armR * 1.16);
-      a.sleeve.position.y = -0.072;
       a.elbow.position.y = -0.295;
       setLimb(a.fore, p.armR * 0.86, 0.27);
       a.hand.scale.set(p.armR * 1.05, p.armR * 1.45, p.armR * 0.72);
