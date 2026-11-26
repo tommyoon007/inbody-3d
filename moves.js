@@ -77,19 +77,18 @@ const MOVES = {
   ),
 
   bike: svg(
-    `<circle cx="50" cy="50" r="9.5" ${GEAR}/><circle cx="50" cy="50" r="2" ${THIN}/>` +
-      `<path d="M27 31L33 49L50 50" ${THIN}/>` +
-      `<path d="M33 49L56 34" ${THIN}/>` +
-      `<path d="M56 34V23" ${THIN}/>` +
-      `<path d="M51 22H61" ${GEAR}/>` +
-      `<path d="M19 30H28" ${GEAR}/>` +
-      `<path d="M50 59V64" ${THIN}/><path d="M29 64H61" ${THIN}/>` +
-      `<path d="M50 50L55 57" ${THIN}/><path d="M52 59H58" ${THIN}/>` +
-      head(37, 18, 4.5) +
-      `<path d="M27 31L35 24" ${INK}/>` +
-      `<path d="M34 25L43 27L52 23" ${INK}/>` +
-      `<path d="M27 31L39 37L54 56" ${INK}/>` +
-      `<path d="M27 31L37 40L48 51" ${INK2}/>`,
+    `<circle cx="57" cy="46" r="7.5" ${GEAR}/><circle cx="57" cy="46" r="1.8" ${THIN}/>` +
+      `<path d="M25 34L32 52L57 46" ${THIN}/>` +
+      `<path d="M32 52L54 32" ${THIN}/>` +
+      `<path d="M54 32V27" ${THIN}/><path d="M50 26H60" ${GEAR}/>` +
+      `<path d="M18 33H26" ${GEAR}/>` +
+      `<path d="M32 52L37 58" ${THIN}/><path d="M35 60H41" ${THIN}/>` +
+      `<path d="M30 64H62" ${THIN}/><path d="M57 53.5V64" ${THIN}/>` +
+      head(35, 18, 4.5) +
+      `<path d="M26 34L34 25" ${INK}/>` +
+      `<path d="M34 26L42 28L50 27" ${INK}/>` +
+      `<path d="M26 34L37 41L37 57" ${INK}/>` +
+      `<path d="M26 34L34 42L30 52" ${INK2}/>`,
     66
   ),
 

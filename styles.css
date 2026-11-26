@@ -511,3 +511,6 @@ input[type="range"]::-moz-range-thumb {
   .move-art { width: 64px; height: 64px; }
   .move-name { font-size: 12px; }
 }
+
+/* 카드가 표 때문에 화면 밖으로 넓어지지 않게 (표는 카드 안에서 가로 스크롤) */
+.card { min-width: 0; }
