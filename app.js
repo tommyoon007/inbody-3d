@@ -719,10 +719,10 @@ class Character3D {
       { t: 0.10, rx: p.hipW * 0.99, rz: p.bellyD * 0.85, z: p.belly * 0.2 },
       { t: 0.26, rx: p.waistW * 1.04, rz: p.bellyD, z: p.belly },
       { t: 0.42, rx: p.waistW, rz: p.waistD + (p.bellyD - p.waistD) * 0.38, z: p.belly * 0.5 },
-      { t: 0.60, rx: (p.waistW + p.shoulder) * 0.54, rz: p.chestD * 0.95, z: 0.004 },
-      { t: 0.80, rx: p.shoulder * 0.95, rz: p.chestD, z: 0 },
-      { t: 0.90, rx: p.shoulder * 0.80, rz: p.chestD * 0.82, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.42, rz: p.chestD * 0.54, z: 0 },
+      { t: 0.60, rx: (p.waistW + p.shoulder) * 0.48, rz: p.chestD * 0.95, z: 0.004 },
+      { t: 0.80, rx: p.shoulder * 0.80, rz: p.chestD, z: 0 },
+      { t: 0.90, rx: p.shoulder * 0.72, rz: p.chestD * 0.82, z: 0 },
+      { t: 1.00, rx: p.shoulder * 0.40, rz: p.chestD * 0.54, z: 0 },
     ];
     return t => {
       let i = 0;
@@ -758,7 +758,7 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.84);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.85);
       a.shoulder.position.y = torsoH * 0.90;
       a.deltoid.scale.set(p.armR * 1.1, p.armR * 1.25, p.armR * 1.05);
       a.deltoid.position.set(a.sgn * p.armR * 0.25, -p.armR * 0.15, 0);
@@ -796,15 +796,15 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: 0.075, shRx: 0, shRz: -0.075, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: 0.115, shRx: 0, shRz: -0.115, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = 0.075 + b * 0.012;
-      p.shRz = -0.075 - b * 0.012;
+      p.shLz = 0.115 + b * 0.012;
+      p.shRz = -0.115 - b * 0.012;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
