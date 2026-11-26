@@ -83,8 +83,6 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
 }
-#three-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
-
 /* 체형 이미지: 같은 프레임의 두 이미지를 겹쳐 두고 opacity로 변신 */
 .figure { position: absolute; inset: 0; overflow: hidden; }
 .figure-ambient {
