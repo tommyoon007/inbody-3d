@@ -35,7 +35,8 @@ function bmiOf(r) {
 }
 function scoreOf(r) {
   if (r.score != null) return r.score;
-  return Math.round(clamp(52 + r.skeletalMuscle * 0.55 - r.bodyFatPct * 0.75, 40, 95));
+  // 2026-10-26 실측(68점)을 기준점으로 근육·체지방 변화만큼 추정
+  return Math.round(clamp(68 + (r.skeletalMuscle - 34.6) * 1.5 + (29.9 - r.bodyFatPct) * 0.9, 40, 95));
 }
 
 function labelOf(r) {
