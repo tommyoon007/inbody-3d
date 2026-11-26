@@ -728,10 +728,10 @@ class Character3D {
       { t: 0.10, rx: p.hipW * 0.99, rz: p.bellyD * 0.85, z: p.belly * 0.2 },
       { t: 0.26, rx: p.waistW * 1.04, rz: p.bellyD, z: p.belly },
       { t: 0.42, rx: p.waistW, rz: p.waistD + (p.bellyD - p.waistD) * 0.38, z: p.belly * 0.5 },
-      { t: 0.60, rx: (p.waistW + p.shoulder) * 0.52, rz: p.chestD * 0.94, z: 0.004 },
-      { t: 0.80, rx: p.shoulder * 0.99, rz: p.chestD, z: 0 },
-      { t: 0.92, rx: p.shoulder * 0.9, rz: p.chestD * 0.84, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.52, rz: p.chestD * 0.56, z: 0 },
+      { t: 0.60, rx: (p.waistW + p.shoulder) * 0.54, rz: p.chestD * 0.95, z: 0.004 },
+      { t: 0.80, rx: p.shoulder * 0.95, rz: p.chestD, z: 0 },
+      { t: 0.90, rx: p.shoulder * 0.80, rz: p.chestD * 0.82, z: 0 },
+      { t: 1.00, rx: p.shoulder * 0.42, rz: p.chestD * 0.54, z: 0 },
     ];
     return t => {
       let i = 0;
@@ -757,7 +757,7 @@ class Character3D {
     const pecW = 0.030 + (p.chestD - 0.10) * 0.42 + (p.armR - 0.036) * 0.30;
     for (const { mesh, sgn } of this.pecs) {
       mesh.scale.set(pecW * 1.15, pecW * 0.85, pecW * 0.30);
-      mesh.position.set(sgn * pecW * 1.02, torsoH * 0.80, p.chestD * 0.80);
+      mesh.position.set(sgn * pecW * 1.02, torsoH * 0.78, p.chestD * 0.92);
       mesh.rotation.set(-0.12, 0, sgn * 0.10);
     }
 
@@ -774,10 +774,10 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.90);
-      a.shoulder.position.y = torsoH - 0.035;
-      a.deltoid.scale.setScalar(p.armR * 1.55);
-      a.deltoid.position.set(0, -p.armR * 0.15, 0);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.93);
+      a.shoulder.position.y = torsoH * 0.90;
+      a.deltoid.scale.set(p.armR * 1.25, p.armR * 1.5, p.armR * 1.2);
+      a.deltoid.position.set(0, -p.armR * 0.35, 0);
       setLimb(a.upper, p.armR, 0.31);
       a.elbow.position.y = -0.305;
       setLimb(a.fore, p.armR * 0.88, 0.28);
