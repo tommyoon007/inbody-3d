@@ -85,7 +85,7 @@ function morphTargets(r) {
     belly: 0.004 + 0.024 * fat + 0.010 * vN,
     hipW: 0.145 + 0.026 * fat + 0.005 * mus,
     hipD: 0.095 + 0.014 * fat,
-    thighR: 0.068 + 0.017 * fat - 0.001 * mus,
+    thighR: 0.074 + 0.018 * fat - 0.001 * mus,
     armR: 0.037 + 0.008 * fat + 0.013 * mus,
     calfR: 0.045 + 0.008 * fat + 0.006 * mus,
     neckR: 0.048 + 0.008 * fat,
@@ -720,10 +720,10 @@ class Character3D {
       { t: 0.12, rx: p.hipW * 1.00, rz: p.bellyD * 0.88, z: p.belly * 0.25 },
       { t: 0.28, rx: p.waistW * 1.02, rz: p.bellyD, z: p.belly },
       { t: 0.44, rx: p.waistW * 0.99, rz: p.waistD + (p.bellyD - p.waistD) * 0.42, z: p.belly * 0.5 },
-      { t: 0.62, rx: (p.waistW + p.shoulder) * 0.53, rz: p.chestD, z: 0.004 },
-      { t: 0.80, rx: p.shoulder * 0.99, rz: p.chestD, z: 0 },
-      { t: 0.92, rx: p.shoulder * 0.80, rz: p.chestD * 0.80, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.42, rz: p.chestD * 0.52, z: 0 },
+      { t: 0.62, rx: (p.waistW + p.shoulder) * 0.54, rz: p.chestD, z: 0.004 },
+      { t: 0.84, rx: p.shoulder * 1.00, rz: p.chestD, z: 0 },
+      { t: 0.93, rx: p.shoulder * 0.86, rz: p.chestD * 0.86, z: 0 },
+      { t: 1.00, rx: p.shoulder * 0.54, rz: p.chestD * 0.64, z: 0 },
     ];
     return t => {
       let i = 0;
@@ -758,10 +758,10 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.98 + p.armR * 0.55);
-      a.shoulder.position.y = torsoH * 0.95;
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.97 + p.armR * 0.45);
+      a.shoulder.position.y = torsoH * 0.84;
       a.deltoid.scale.set(p.armR * 1.22, p.armR * 1.38, p.armR * 1.18);
-      a.deltoid.position.set(0, -p.armR * 0.30, 0);
+      a.deltoid.position.set(0, p.armR * 0.10, 0);
       setLimb(a.upper, p.armR, 0.30);
       a.elbow.position.y = -0.295;
       setLimb(a.fore, p.armR * 0.88, 0.28);
@@ -773,7 +773,7 @@ class Character3D {
     updateTube(this.shortsGeo, t => {
       const w = lerp(1.03, 1.07, t);
       return { rx: p.hipW * w, rz: p.hipD * w, z: 0 };
-    }, -0.245, 0.28);
+    }, -0.21, 0.24);
 
     // 다리
     for (const side of ['L', 'R']) {
