@@ -652,10 +652,6 @@ class Character3D {
       shoulder.position.set(sgn * 0.16, 0.50, 0);
       hips.add(shoulder);
 
-      const deltoid = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), this.mat.skin);
-      deltoid.castShadow = true;
-      shoulder.add(deltoid);
-
       const upper = makeLimb(this.mat.skin);
       shoulder.add(upper);
 
@@ -670,7 +666,7 @@ class Character3D {
       hand.castShadow = true;
       elbow.add(hand);
 
-      this.arms[side] = { sgn, shoulder, deltoid, upper, elbow, fore, hand };
+      this.arms[side] = { sgn, shoulder, upper, elbow, fore, hand };
     }
 
     /* --- 반바지(골반) --- */
@@ -723,7 +719,7 @@ class Character3D {
       { t: 0.62, rx: (p.waistW + p.shoulder) * 0.54, rz: p.chestD, z: 0.004 },
       { t: 0.84, rx: p.shoulder * 1.00, rz: p.chestD, z: 0 },
       { t: 0.93, rx: p.shoulder * 0.94, rz: p.chestD * 0.88, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.60, rz: p.chestD * 0.70, z: 0 },
+      { t: 1.00, rx: p.shoulder * 0.72, rz: p.chestD * 0.78, z: 0 },
     ];
     return t => {
       let i = 0;
@@ -758,12 +754,10 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.90 + p.armR * 0.40);
-      a.shoulder.position.y = torsoH * 0.84;
-      a.deltoid.scale.set(p.armR * 1.45, p.armR * 1.75, p.armR * 1.40);
-      a.deltoid.position.set(a.sgn * p.armR * 0.10, -p.armR * 0.30, 0);
-      setLimb(a.upper, p.armR, 0.30);
-      a.elbow.position.y = -0.295;
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.92);
+      a.shoulder.position.y = torsoH * 0.89;
+      setLimb(a.upper, p.armR, 0.31);
+      a.elbow.position.y = -0.305;
       setLimb(a.fore, p.armR * 0.88, 0.28);
       a.hand.scale.set(p.armR * 1.08, p.armR * 1.5, p.armR * 0.75);
       a.hand.position.y = -0.30;
@@ -796,15 +790,15 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: 0.16, shRx: 0, shRz: -0.16, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: 0.15, shRx: 0, shRz: -0.15, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = 0.16 + b * 0.010;
-      p.shRz = -0.16 - b * 0.010;
+      p.shLz = 0.15 + b * 0.010;
+      p.shRz = -0.15 - b * 0.010;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
