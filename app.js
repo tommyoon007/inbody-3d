@@ -1123,6 +1123,7 @@ async function init() {
     character.setParams(paramsAt(state.index));
   } catch (err) {
     console.error('3D init failed', err);
+    (window.__errors = window.__errors || []).push('3D init: ' + (err && err.stack ? err.stack : String(err)));
     $('#loader').textContent = '3D 모델을 표시할 수 없습니다 (WebGL 미지원)';
   }
 
