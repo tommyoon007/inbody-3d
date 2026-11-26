@@ -527,11 +527,11 @@ class Character3D {
     fill.position.set(-2.6, 1.8, 1.6);
     this.scene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0x39e3b0, 1.5);
+    const rim = new THREE.DirectionalLight(0x9fc4ff, 1.1);
     rim.position.set(-0.6, 2.2, -3.2);
     this.scene.add(rim);
 
-    const rim2 = new THREE.DirectionalLight(0x7aa7ff, 0.6);
+    const rim2 = new THREE.DirectionalLight(0x2ee6a8, 0.35);
     rim2.position.set(2.4, 1.2, -2.6);
     this.scene.add(rim2);
   }
@@ -746,10 +746,11 @@ class Character3D {
     updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
 
     // 가슴 볼륨: 근육량이 높을수록 크고 또렷, 지방이 많으면 부드럽게 퍼짐
-    const pecW = 0.021 + (p.chestD - 0.10) * 0.34 + (p.armR - 0.036) * 0.30;
+    const pecW = 0.030 + (p.chestD - 0.10) * 0.42 + (p.armR - 0.036) * 0.30;
     for (const { mesh, sgn } of this.pecs) {
-      mesh.scale.set(pecW, pecW * 0.82, pecW * 0.42);
-      mesh.position.set(sgn * pecW * 0.95, torsoH * 0.785, p.chestD * 0.93);
+      mesh.scale.set(pecW * 1.15, pecW * 0.85, pecW * 0.30);
+      mesh.position.set(sgn * pecW * 1.02, torsoH * 0.80, p.chestD * 0.80);
+      mesh.rotation.set(-0.12, 0, sgn * 0.10);
     }
 
     // 목
