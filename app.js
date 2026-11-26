@@ -73,22 +73,23 @@ function morphTargets(r) {
   const wN = clamp((waistOf(r) - 0.84) / (1.04 - 0.84), 0, 1.3);
   const vN = clamp((visceralOf(r) - 6) / (13 - 6), 0, 1.3);
 
-  const waistW = 0.133 + 0.040 * wN + 0.010 * fat;
-  const waistD = 0.090 + 0.013 * wN;
+  const waistW = 0.138 + 0.038 * wN + 0.008 * fat;
+  const waistD = 0.088 + 0.012 * wN;
+  const chestD = 0.100 + 0.022 * mus + 0.026 * fat;
   return {
-    shoulder: 0.203 + 0.034 * mus + 0.005 * fat,
-    chestD: 0.103 + 0.022 * mus + 0.030 * fat,
+    shoulder: 0.148 + 0.030 * mus + 0.004 * fat,   // 가슴 폭(반)
+    chestD,
     waistW,
     waistD,
-    bellyD: waistD + 0.010 + 0.034 * fat + 0.009 * vN,
-    belly: 0.006 + 0.028 * fat + 0.011 * vN,
-    hipW: 0.148 + 0.030 * fat + 0.006 * mus,
-    hipD: 0.096 + 0.016 * fat,
-    thighR: 0.070 + 0.020 * fat - 0.001 * mus,
-    armR: 0.038 + 0.009 * fat + 0.014 * mus,
-    calfR: 0.047 + 0.009 * fat + 0.006 * mus,
-    neckR: 0.044 + 0.008 * fat,
-    headW: 0.083 + 0.009 * fat,
+    bellyD: waistD + 0.008 + 0.030 * fat + 0.008 * vN,
+    belly: 0.004 + 0.024 * fat + 0.010 * vN,
+    hipW: 0.145 + 0.026 * fat + 0.005 * mus,
+    hipD: 0.095 + 0.014 * fat,
+    thighR: 0.068 + 0.017 * fat - 0.001 * mus,
+    armR: 0.037 + 0.008 * fat + 0.013 * mus,
+    calfR: 0.045 + 0.008 * fat + 0.006 * mus,
+    neckR: 0.048 + 0.008 * fat,
+    headW: 0.088 + 0.008 * fat,
     faceFull: fat,
   };
 }
@@ -459,10 +460,10 @@ class Character3D {
     this.scene.fog = new THREE.Fog(0x0a0e13, 3.4, 8);
 
     this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
-    this.camera.position.set(0.55, 1.35, 3.35);
+    this.camera.position.set(0.5, 1.3, 3.3);
 
     this.controls = new OrbitControls(this.camera, canvas);
-    this.controls.target.set(0, 0.93, 0);
+    this.controls.target.set(0, 0.9, 0);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.075;
     this.controls.enablePan = false;
@@ -476,8 +477,8 @@ class Character3D {
 
     const _q = new URLSearchParams(location.search);
     if (_q.get('view') === 'head') {
-      this.camera.position.set(0, 1.5, 0.75);
-      this.controls.target.set(0, 1.5, 0);
+      this.camera.position.set(0, 1.55, 0.72);
+      this.controls.target.set(0, 1.55, 0);
       this.controls.update();
     }
 
@@ -582,7 +583,7 @@ class Character3D {
     this.body = body;
 
     const hips = new THREE.Group();       // 골반 피벗 (y=0.88)
-    hips.position.y = 0.88;
+    hips.position.y = 0.86;
     body.add(hips);
     this.hips = hips;
 
@@ -693,7 +694,7 @@ class Character3D {
       hip.add(shortLeg);
 
       const knee = new THREE.Group();
-      knee.position.y = -0.41;
+      knee.position.y = -0.385;
       hip.add(knee);
 
       const kneeBall = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), this.mat.skin);
@@ -715,14 +716,14 @@ class Character3D {
 
   _torsoProfile(p) {
     const keys = [
-      { t: 0.00, rx: p.hipW * 0.95, rz: p.hipD * 0.95, z: 0 },
-      { t: 0.10, rx: p.hipW * 0.99, rz: p.bellyD * 0.85, z: p.belly * 0.2 },
-      { t: 0.26, rx: p.waistW * 1.04, rz: p.bellyD, z: p.belly },
-      { t: 0.42, rx: p.waistW, rz: p.waistD + (p.bellyD - p.waistD) * 0.38, z: p.belly * 0.5 },
-      { t: 0.60, rx: (p.waistW + p.shoulder) * 0.48, rz: p.chestD * 0.95, z: 0.004 },
-      { t: 0.80, rx: p.shoulder * 0.80, rz: p.chestD, z: 0 },
-      { t: 0.90, rx: p.shoulder * 0.72, rz: p.chestD * 0.82, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.40, rz: p.chestD * 0.54, z: 0 },
+      { t: 0.00, rx: p.hipW * 0.96, rz: p.hipD * 0.94, z: 0 },
+      { t: 0.12, rx: p.hipW * 1.00, rz: p.bellyD * 0.88, z: p.belly * 0.25 },
+      { t: 0.28, rx: p.waistW * 1.02, rz: p.bellyD, z: p.belly },
+      { t: 0.44, rx: p.waistW * 0.99, rz: p.waistD + (p.bellyD - p.waistD) * 0.42, z: p.belly * 0.5 },
+      { t: 0.62, rx: (p.waistW + p.shoulder) * 0.53, rz: p.chestD, z: 0.004 },
+      { t: 0.80, rx: p.shoulder * 0.99, rz: p.chestD, z: 0 },
+      { t: 0.92, rx: p.shoulder * 0.80, rz: p.chestD * 0.80, z: 0 },
+      { t: 1.00, rx: p.shoulder * 0.42, rz: p.chestD * 0.52, z: 0 },
     ];
     return t => {
       let i = 0;
@@ -739,54 +740,53 @@ class Character3D {
   }
 
   _applyLimbScale(p) {
-    const torsoH = 0.56;
+    const torsoH = 0.59;
     this.torsoH = torsoH;
 
     updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
 
-
     // 목
-    this.neck.scale.set(p.neckR, 0.10, p.neckR * 1.02);
+    this.neck.scale.set(p.neckR, 0.075, p.neckR * 1.02);
     this.neck.position.y = torsoH + 0.005;
 
     // 머리
     const R = p.headW;
     this.headShape.scale.set(R, R * 1.24, R * 1.05);
-    this.headShape.position.y = 0.10;
-    this.head.position.y = torsoH + 0.062;
+    this.headShape.position.y = 0.105;
+    this.head.position.y = torsoH + 0.075;
 
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.85);
-      a.shoulder.position.y = torsoH * 0.90;
-      a.deltoid.scale.set(p.armR * 1.1, p.armR * 1.25, p.armR * 1.05);
-      a.deltoid.position.set(a.sgn * p.armR * 0.25, -p.armR * 0.15, 0);
-      setLimb(a.upper, p.armR, 0.31);
-      a.elbow.position.y = -0.305;
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.98 + p.armR * 0.55);
+      a.shoulder.position.y = torsoH * 0.95;
+      a.deltoid.scale.set(p.armR * 1.22, p.armR * 1.38, p.armR * 1.18);
+      a.deltoid.position.set(0, -p.armR * 0.30, 0);
+      setLimb(a.upper, p.armR, 0.30);
+      a.elbow.position.y = -0.295;
       setLimb(a.fore, p.armR * 0.88, 0.28);
       a.hand.scale.set(p.armR * 1.08, p.armR * 1.5, p.armR * 0.75);
-      a.hand.position.y = -0.295;
+      a.hand.position.y = -0.30;
     }
 
     // 반바지
     updateTube(this.shortsGeo, t => {
-      const w = lerp(1.06, 1.10, t);
+      const w = lerp(1.03, 1.07, t);
       return { rx: p.hipW * w, rz: p.hipD * w, z: 0 };
-    }, -0.235, 0.30);
+    }, -0.245, 0.28);
 
     // 다리
     for (const side of ['L', 'R']) {
       const L = this.legs[side];
-      L.hip.position.x = L.sgn * p.hipW * 0.52;
-      setLimb(L.thigh, p.thighR, 0.41);
-      L.shortLeg.scale.set(p.thighR * 1.16, 0.105, p.thighR * 1.16);
-      L.shortLeg.position.y = -0.115;
-      L.knee.position.y = -0.405;
-      L.kneeBall.scale.set(p.calfR * 1.05, p.calfR * 1.0, p.calfR * 1.02);
-      setLimb(L.shin, p.calfR * 0.95, 0.39);
-      L.foot.scale.set(0.088, 0.062, 0.225);
-      L.foot.position.set(0, -0.435, 0.052);
+      L.hip.position.x = L.sgn * p.hipW * 0.50;
+      setLimb(L.thigh, p.thighR, 0.385);
+      L.shortLeg.scale.set(p.thighR * 1.12, 0.095, p.thighR * 1.12);
+      L.shortLeg.position.y = -0.125;
+      L.knee.position.y = -0.38;
+      L.kneeBall.scale.set(p.calfR * 0.98, p.calfR * 0.95, p.calfR * 0.98);
+      setLimb(L.shin, p.calfR * 0.95, 0.38);
+      L.foot.scale.set(0.095, 0.068, 0.24);
+      L.foot.position.set(0, -0.40, 0.055);
     }
   }
 
