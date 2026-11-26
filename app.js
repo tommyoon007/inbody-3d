@@ -82,9 +82,9 @@ function morphTargets(r) {
     waistD,
     bellyD: waistD + 0.010 + 0.034 * fat + 0.009 * vN,
     belly: 0.006 + 0.028 * fat + 0.011 * vN,
-    hipW: 0.142 + 0.028 * fat + 0.005 * mus,
+    hipW: 0.148 + 0.030 * fat + 0.006 * mus,
     hipD: 0.096 + 0.016 * fat,
-    thighR: 0.066 + 0.018 * fat - 0.002 * mus,
+    thighR: 0.070 + 0.020 * fat - 0.001 * mus,
     armR: 0.038 + 0.009 * fat + 0.014 * mus,
     calfR: 0.047 + 0.009 * fat + 0.006 * mus,
     neckR: 0.044 + 0.008 * fat,
@@ -660,6 +660,10 @@ class Character3D {
       shoulder.position.set(sgn * 0.16, 0.50, 0);
       hips.add(shoulder);
 
+      const deltoid = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), this.mat.skin);
+      deltoid.castShadow = true;
+      shoulder.add(deltoid);
+
       const upper = makeLimb(this.mat.skin);
       shoulder.add(upper);
 
@@ -674,7 +678,7 @@ class Character3D {
       hand.castShadow = true;
       elbow.add(hand);
 
-      this.arms[side] = { sgn, shoulder, upper, elbow, fore, hand };
+      this.arms[side] = { sgn, shoulder, deltoid, upper, elbow, fore, hand };
     }
 
     /* --- 반바지(골반) --- */
@@ -701,6 +705,10 @@ class Character3D {
       knee.position.y = -0.41;
       hip.add(knee);
 
+      const kneeBall = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), this.mat.skin);
+      kneeBall.castShadow = true;
+      knee.add(kneeBall);
+
       const shin = makeLimb(this.mat.skin);
       knee.add(shin);
 
@@ -709,7 +717,7 @@ class Character3D {
       foot.receiveShadow = true;
       knee.add(foot);
 
-      this.legs[side] = { sgn, hip, thigh, shortLeg, knee, shin, foot };
+      this.legs[side] = { sgn, hip, thigh, shortLeg, knee, kneeBall, shin, foot };
     }
 
   }
@@ -767,12 +775,14 @@ class Character3D {
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
       a.shoulder.position.x = a.sgn * (p.shoulder * 0.90);
-      a.shoulder.position.y = torsoH - 0.045;
-      setLimb(a.upper, p.armR, 0.30);
-      a.elbow.position.y = -0.295;
-      setLimb(a.fore, p.armR * 0.86, 0.27);
-      a.hand.scale.set(p.armR * 1.05, p.armR * 1.45, p.armR * 0.72);
-      a.hand.position.y = -0.285;
+      a.shoulder.position.y = torsoH - 0.035;
+      a.deltoid.scale.setScalar(p.armR * 1.55);
+      a.deltoid.position.set(0, -p.armR * 0.15, 0);
+      setLimb(a.upper, p.armR, 0.31);
+      a.elbow.position.y = -0.305;
+      setLimb(a.fore, p.armR * 0.88, 0.28);
+      a.hand.scale.set(p.armR * 1.08, p.armR * 1.5, p.armR * 0.75);
+      a.hand.position.y = -0.295;
     }
 
     // 반바지
@@ -789,7 +799,8 @@ class Character3D {
       L.shortLeg.scale.set(p.thighR * 1.16, 0.105, p.thighR * 1.16);
       L.shortLeg.position.y = -0.115;
       L.knee.position.y = -0.405;
-      setLimb(L.shin, p.calfR * 0.92, 0.39);
+      L.kneeBall.scale.set(p.calfR * 1.05, p.calfR * 1.0, p.calfR * 1.02);
+      setLimb(L.shin, p.calfR * 0.95, 0.39);
       L.foot.scale.set(0.088, 0.062, 0.225);
       L.foot.position.set(0, -0.435, 0.052);
     }
