@@ -1043,7 +1043,16 @@ function initCompare() {
 function initSheet() {
   const backdrop = $('#sheet-backdrop');
   const form = $('#record-form');
-  const open = () => { backdrop.classList.remove('hidden'); form.reset(); };
+  const todayISO = () => {
+    const d = new Date();
+    const p2 = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+  };
+  const open = () => {
+    backdrop.classList.remove('hidden');
+    form.reset();
+    form.elements.date.value = todayISO();
+  };
   const close = () => backdrop.classList.add('hidden');
 
   $('#add-btn').addEventListener('click', open);
