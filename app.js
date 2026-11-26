@@ -652,6 +652,10 @@ class Character3D {
       shoulder.position.set(sgn * 0.16, 0.50, 0);
       hips.add(shoulder);
 
+      const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), this.mat.skin);
+      shoulderCap.castShadow = true;
+      shoulder.add(shoulderCap);
+
       const upper = makeLimb(this.mat.skin);
       shoulder.add(upper);
 
@@ -666,7 +670,7 @@ class Character3D {
       hand.castShadow = true;
       elbow.add(hand);
 
-      this.arms[side] = { sgn, shoulder, upper, elbow, fore, hand };
+      this.arms[side] = { sgn, shoulder, shoulderCap, upper, elbow, fore, hand };
     }
 
     /* --- 반바지(골반) --- */
@@ -754,8 +758,10 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.92);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 1.10);
       a.shoulder.position.y = torsoH * 0.89;
+      a.shoulderCap.scale.set(p.armR * 1.20, p.armR * 1.30, p.armR * 1.15);
+      a.shoulderCap.position.set(a.sgn * p.armR * 0.15, -p.armR * 0.15, 0);
       setLimb(a.upper, p.armR, 0.31);
       a.elbow.position.y = -0.305;
       setLimb(a.fore, p.armR * 0.88, 0.28);
@@ -790,15 +796,15 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: 0.15, shRx: 0, shRz: -0.15, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: 0.185, shRx: 0, shRz: -0.185, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = 0.15 + b * 0.010;
-      p.shRz = -0.15 - b * 0.010;
+      p.shLz = 0.185 + b * 0.010;
+      p.shRz = -0.185 - b * 0.010;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
