@@ -1,0 +1,58 @@
+{
+  "profile": {
+    "name": "윤홍기",
+    "height": 176,
+    "updated": "2026-11-26"
+  },
+  "records": [
+    {
+      "id": "2026-09-21",
+      "date": "2026-09-21",
+      "label": "1차 측정",
+      "weight": 87.7,
+      "skeletalMuscle": 34.5,
+      "bodyFatMass": 26.4,
+      "bodyFatPct": 30.1,
+      "bmi": 28.3,
+      "score": 67,
+      "waistRatio": 1.02,
+      "visceralFat": 12,
+      "bmr": 1698,
+      "estimated": {
+        "score": true,
+        "waistRatio": true,
+        "visceralFat": true,
+        "bmr": true
+      }
+    },
+    {
+      "id": "2026-10-26",
+      "date": "2026-10-26",
+      "label": "2차 측정",
+      "weight": 87.7,
+      "skeletalMuscle": 34.6,
+      "bodyFatMass": 26.2,
+      "bodyFatPct": 29.9,
+      "bmi": 28.3,
+      "score": 68,
+      "waistRatio": 1.02,
+      "visceralFat": 12,
+      "bmr": 1698
+    },
+    {
+      "id": "goal",
+      "date": "2027-03-31",
+      "label": "목표 체형",
+      "goal": true,
+      "weight": 75.0,
+      "skeletalMuscle": 36.0,
+      "bodyFatMass": 13.1,
+      "bodyFatPct": 17.5,
+      "bmi": 24.2,
+      "score": 82,
+      "waistRatio": 0.86,
+      "visceralFat": 7,
+      "bmr": 1725
+    }
+  ]
+}
