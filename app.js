@@ -89,7 +89,7 @@ function morphTargets(r) {
     armR: 0.040 + 0.009 * fat + 0.014 * mus,
     calfR: 0.045 + 0.008 * fat + 0.006 * mus,
     neckR: 0.048 + 0.008 * fat,
-    headW: 0.101 + 0.008 * fat,
+    headW: 0.106 + 0.008 * fat,
     faceFull: fat,
   };
 }
@@ -752,13 +752,13 @@ class Character3D {
     // 머리
     const R = p.headW;
     this.headShape.scale.set(R, R * 1.20, R * 1.04);
-    this.headShape.position.y = 0.098;
-    this.head.position.y = torsoH + 0.028;
+    this.headShape.position.y = 0.095;
+    this.head.position.y = torsoH + 0.012;
 
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 1.00);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.94);
       a.shoulder.position.y = torsoH * 0.89;
       a.shoulderCap.scale.set(p.armR * 1.08, p.armR * 1.18, p.armR * 1.05);
       a.shoulderCap.position.set(a.sgn * p.armR * 0.15, -p.armR * 0.15, 0);
