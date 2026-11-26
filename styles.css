@@ -103,7 +103,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   background: rgba(7, 10, 14, 0.72);
   transition: opacity .5s; pointer-events: none;
 }
-.loader.hidden { opacity: 0; }
+.loader.hidden { opacity: 0; visibility: hidden; transition: opacity .5s, visibility .5s; }
 .spinner {
   width: 26px; height: 26px; border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.12); border-top-color: var(--mint);

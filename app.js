@@ -1085,7 +1085,7 @@ function initSheet() {
     local.push(rec);
     localStorage.setItem(STORE_KEY, JSON.stringify(local));
     close();
-    initData();
+    initData(rec.id);
     toast('기록을 저장했습니다');
   });
 
@@ -1112,11 +1112,17 @@ function initSheet() {
   });
 }
 
-function initData() {
+async function initData(focusId) {
+  await loadRecords();
   refreshUI();
-  const idx = clamp(Math.round(state.index), 0, state.records.length - 1);
+  let idx = clamp(Math.round(state.index), 0, state.records.length - 1);
+  if (focusId) {
+    const found = state.records.findIndex(r => r.id === focusId);
+    if (found >= 0) idx = found;
+  }
   state.index = idx;
   setSliderUI();
+  renderStats();
   if (character) character.setParams(paramsAt(state.index));
 }
 
