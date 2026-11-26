@@ -609,7 +609,7 @@ class Character3D {
     this.headShape = new THREE.Group();
     this.head.add(this.headShape);
 
-    const headSphere = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 30), this.mat.skin);
+    const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.955, 40, 30), this.mat.skin);
     headSphere.castShadow = true;
     this.headShape.add(headSphere);
 
@@ -634,13 +634,13 @@ class Character3D {
 
     // 머리카락
     const hairTop = new THREE.Mesh(
-      new THREE.SphereGeometry(1.024, 40, 24, 0, Math.PI * 2, 0, 0.40),
+      new THREE.SphereGeometry(1.000, 40, 24, 0, Math.PI * 2, 0, 0.40),
       this.mat.hair
     );
     hairTop.castShadow = true;
     this.headShape.add(hairTop);
     const hairBack = new THREE.Mesh(
-      new THREE.SphereGeometry(1.036, 40, 24, Math.PI * 0.94, Math.PI * 1.12, 0.34, 1.05),
+      new THREE.SphereGeometry(1.002, 40, 24, Math.PI * 0.94, Math.PI * 1.12, 0.34, 1.05),
       this.mat.hair
     );
     this.headShape.add(hairBack);
