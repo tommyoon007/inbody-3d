@@ -37,29 +37,29 @@ const svg = (inner, groundY = null) =>
 const MOVES = {
   /* ---------- 유산소 ---------- */
   walk: svg(
-    head(35, 15, 5) +
-      `<path d="M35 20L33 38" ${INK}/>` +
-      `<path d="M33 38L41 47L44 60" ${INK}/>` +
-      `<path d="M44 60L43 64H48" ${INK}/>` +
-      `<path d="M33 38L25 49L20 61" ${INK}/>` +
-      `<path d="M20 61L16 64H22" ${INK}/>` +
-      `<path d="M34 25L42 31L39 38" ${INK}/>` +
-      `<path d="M33 25L26 31L29 38" ${INK2}/>` +
+    head(36, 15, 5) +
+      `<path d="M36 20L33 38" ${INK}/>` +
+      `<path d="M33 38L41 47L43 60" ${INK}/>` +
+      `<path d="M43 60L42 64H47" ${INK}/>` +
+      `<path d="M33 38L27 49L24 61" ${INK}/>` +
+      `<path d="M24 61L21 64H27" ${INK}/>` +
+      `<path d="M35 25L41 30L44 36" ${INK}/>` +
+      `<path d="M34 25L28 30L25 35" ${INK2}/>` +
       arrowR(52, 22, 12) +
       arrowR(52, 33, 12),
     66
   ),
 
   postmeal: svg(
-    head(35, 15, 5) +
-      `<path d="M35 20L33 38" ${INK}/>` +
-      `<path d="M33 38L40 47L43 59" ${INK}/>` +
-      `<path d="M43 59L42 63H47" ${INK}/>` +
-      `<path d="M33 38L26 49L21 60" ${INK}/>` +
-      `<path d="M21 60L17 63H23" ${INK}/>` +
-      `<path d="M34 25L41 31L38 37" ${INK}/>` +
-      `<path d="M33 25L27 31L30 37" ${INK2}/>` +
-      `<circle cx="60" cy="14" r="7" ${MOVE}/><path d="M60 10v4l3 2" ${MOVE}/>`,
+    head(36, 15, 5) +
+      `<path d="M36 20L33 38" ${INK}/>` +
+      `<path d="M33 38L40 47L42 59" ${INK}/>` +
+      `<path d="M42 59L41 63H46" ${INK}/>` +
+      `<path d="M33 38L28 49L25 60" ${INK}/>` +
+      `<path d="M25 60L22 63H28" ${INK}/>` +
+      `<path d="M35 25L40 30L43 35" ${INK}/>` +
+      `<path d="M34 25L29 30L26 35" ${INK2}/>` +
+      `<circle cx="59" cy="14" r="7" ${MOVE}/><path d="M59 10v4l3 2" ${MOVE}/>`,
     64
   ),
 
@@ -77,16 +77,19 @@ const MOVES = {
   ),
 
   bike: svg(
-    `<circle cx="52" cy="47" r="8.5" ${GEAR}/><circle cx="52" cy="47" r="2" ${THIN}/>` +
-      `<path d="M29 35V49L36 52L52 47" ${GEAR}/>` +
-      `<path d="M52 47L56 28" ${GEAR}/><path d="M49 27H61" ${GEAR}/>` +
-      `<path d="M22 34H30" ${GEAR}/>` +
-      `<path d="M52 47L57 53" ${THIN}/><path d="M45 55H50" ${THIN}/>` +
-      head(39, 21, 4.6) +
-      `<path d="M29 35L37 27" ${INK}/>` +
-      `<path d="M36 28L44 30L51 28" ${INK}/>` +
-      `<path d="M29 35L42 36L57 53" ${INK}/>` +
-      `<path d="M29 35L40 39L47 51" ${INK2}/>`,
+    `<circle cx="50" cy="50" r="9.5" ${GEAR}/><circle cx="50" cy="50" r="2" ${THIN}/>` +
+      `<path d="M27 31L33 49L50 50" ${THIN}/>` +
+      `<path d="M33 49L56 34" ${THIN}/>` +
+      `<path d="M56 34V23" ${THIN}/>` +
+      `<path d="M51 22H61" ${GEAR}/>` +
+      `<path d="M19 30H28" ${GEAR}/>` +
+      `<path d="M50 59V64" ${THIN}/><path d="M29 64H61" ${THIN}/>` +
+      `<path d="M50 50L55 57" ${THIN}/><path d="M52 59H58" ${THIN}/>` +
+      head(37, 18, 4.5) +
+      `<path d="M27 31L35 24" ${INK}/>` +
+      `<path d="M34 25L43 27L52 23" ${INK}/>` +
+      `<path d="M27 31L39 37L54 56" ${INK}/>` +
+      `<path d="M27 31L37 40L48 51" ${INK2}/>`,
     66
   ),
 
@@ -124,7 +127,6 @@ const MOVES = {
       `<path d="M18 33L30 43" ${INK}/>` +
       `<path d="M30 43L40 37L52 31" ${INK}/>` +
       `<path d="M30 43L40 41L52 36" ${INK2}/>` +
-      `<path d="M24 36L30 41" ${THIN}/>` +
       arrowR(24, 16, 12),
     66
   ),
@@ -145,8 +147,8 @@ const MOVES = {
   /* ---------- 상체 ---------- */
   pulldown: svg(
     `<path d="M62 66V10H48" ${GEAR}/><path d="M48 10V22" ${THIN}/>` +
-      `<path d="M38 22H56" ${GEAR}/>` +
-      `<path d="M26 52H42" ${GEAR}/><path d="M33 52V66" ${THIN}/>` +
+      `<path d="M34 22H56" ${GEAR}/>` +
+      `<path d="M28 52H44" ${GEAR}/><path d="M33 52V66" ${THIN}/>` +
       glow(34, 41, 4, 7) +
       glow(42, 41, 4, 7) +
       head(38, 33, 4.6) +

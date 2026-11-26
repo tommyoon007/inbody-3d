@@ -392,6 +392,15 @@ function observeChart() {
   chartObserver.observe(host);
 }
 
+function niceStep(rough, integer) {
+  if (!isFinite(rough) || rough <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const nrm = rough / mag;
+  let step = (nrm <= 1 ? 1 : nrm <= 2 ? 2 : nrm <= 2.5 ? 2.5 : nrm <= 5 ? 5 : 10) * mag;
+  if (integer) step = Math.max(1, Math.round(step));
+  return step;
+}
+
 function renderChart() {
   const host = document.getElementById('chart-plot');
   const sum = document.getElementById('chart-sum');
@@ -422,22 +431,25 @@ function renderChart() {
 
   const vals = meas.map(m.get);
   let lo = Math.min(...vals), hi = Math.max(...vals);
-  if (vals.length === 1) {
-    const p = Math.max(0.5, Math.abs(lo) * 0.02);
-    lo -= p; hi += p;
-  } else {
-    const p = Math.max((hi - lo) * 0.35, Math.abs(hi) * 0.004, 0.05);
+  if (hi - lo < 1e-9) {
+    const p = Math.max(0.5, Math.abs(hi) * 0.02);
     lo -= p; hi += p;
   }
+  /* 보기 좋은 눈금(1·2·2.5·5·10 배수)으로 축 범위를 맞춘다 */
+  const step = niceStep((hi - lo) / 3, m.digits === 0);
+  const lo0 = Math.floor(lo / step) * step;
+  const hi0 = Math.ceil(hi / step) * step;
+  const ticks = [];
+  for (let v = lo0; v <= hi0 + step * 1e-6; v += step) ticks.push(v);
+  lo = lo0; hi = hi0;
   const yOf = v => padT + (1 - (v - lo) / (hi - lo)) * plotH;
   const n = meas.length;
   const xOf = i => (n === 1 ? padL + plotW / 2 : padL + (plotW * i) / (n - 1));
 
   /* 눈금 + 축 라벨 */
-  const ticks = [0, 0.5, 1].map(t => lo + (hi - lo) * t);
-  const grid = ticks.map((t, i) => {
+  const grid = ticks.map(t => {
     const yy = yOf(t).toFixed(1);
-    return `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="rgba(255,255,255,${i === 1 ? 0.05 : 0.08})" stroke-width="1"/>` +
+    return `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>` +
       `<text x="${padL - 7}" y="${(Number(yy) + 3.2).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#7f8c9d">${digits(t)}</text>`;
   }).join('');
 
@@ -480,7 +492,7 @@ function renderChart() {
       <stop offset="1" stop-color="#2ee6a8" stop-opacity="0"/>
     </linearGradient></defs>
     ${grid}${goalEl}${area}${stroke}${dots}
-    <text x="${W - padR}" y="13" text-anchor="end" font-size="9.5" fill="#7f8c9d">${m.unit || m.name}</text>
+    <text x="6" y="12" text-anchor="start" font-size="9.5" fill="#7f8c9d">${m.unit || m.name}</text>
   </svg>`;
 
   /* 요약 */
