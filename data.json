@@ -40,6 +40,20 @@
       "bmr": 1698
     },
     {
+      "id": "2026-11-26",
+      "date": "2026-11-26",
+      "label": "3차 측정",
+      "weight": 85.6,
+      "skeletalMuscle": 34.1,
+      "bodyFatMass": 25.0,
+      "bodyFatPct": 29.2,
+      "bmi": 27.6,
+      "score": 68,
+      "waistRatio": 0.99,
+      "visceralFat": 11,
+      "bmr": 1679
+    },
+    {
       "id": "goal",
       "date": "2027-03-31",
       "label": "목표 체형",

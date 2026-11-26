@@ -3,6 +3,8 @@
    ========================================================= */
 const HEIGHT_CM = 176;
 const STORE_KEY = 'inbody3d.records.v1';
+const IMG_SOURCE_DATE = '2026-10-26'; // assets/body-current.webp 를 만든 측정일
+const IMG_SOURCE_SHORT = '10/26';
 
 const state = {
   mode: 'model',
@@ -29,8 +31,8 @@ function bmiOf(r) {
 }
 function scoreOf(r) {
   if (r.score != null) return r.score;
-  // 2026-10-26 실측(68점)을 기준점으로 근육·체지방 변화만큼 추정
-  return Math.round(clamp(68 + (r.skeletalMuscle - 34.6) * 1.5 + (29.9 - r.bodyFatPct) * 0.9, 40, 95));
+  // 2026-11-26 실측(68점)을 기준점으로 근육·체지방 변화만큼 추정
+  return Math.round(clamp(68 + (r.skeletalMuscle - 34.1) * 1.5 + (29.2 - r.bodyFatPct) * 0.9, 40, 95));
 }
 
 function labelOf(r) {
@@ -64,6 +66,13 @@ async function loadRecords() {
 /* 체형 이미지 변신 */
 function goalIndex() {
   return state.records.findIndex(r => r.goal);
+}
+
+/* 첫 화면은 마지막 실측(최신 측정) 기록 */
+function defaultIndex() {
+  const gi = goalIndex();
+  if (gi >= 0) return Math.max(0, gi - 1);
+  return Math.max(0, state.records.length - 1);
 }
 
 /* fIndex 위치에 따라 목표 이미지를 얼마나 덮을지(0~1) */
@@ -310,8 +319,9 @@ function renderGallery() {
     const isGoal = !!r.goal;
     const src = isGoal ? 'assets/body-goal.webp' : 'assets/body-current.webp';
     let caption = '';
-    if (!isGoal && i === 0 && rs.length > 2) caption = '10/26 체형 이미지로 표현';
-    if (!isGoal && i > 0) caption = '실제 측정 기반 체형 이미지';
+    if (!isGoal) caption = (r.date || '') === IMG_SOURCE_DATE
+      ? '실제 측정 기반 체형 이미지'
+      : `${IMG_SOURCE_SHORT} 체형 이미지로 표현`;
     if (isGoal) caption = '목표 체형 이미지';
     if (r.local) caption = '이미지 없음 · 수치만 기록';
     return `<div class="g-card">
@@ -552,7 +562,7 @@ function initSheet() {
 async function initData(focusId) {
   await loadRecords();
   refreshUI();
-  let idx = clamp(Math.round(state.index), 0, state.records.length - 1);
+  let idx = defaultIndex();
   if (focusId) {
     const found = state.records.findIndex(r => r.id === focusId);
     if (found >= 0) idx = found;

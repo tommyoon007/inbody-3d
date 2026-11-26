@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="stylesheet" href="styles.css?v=63" />
+<link rel="stylesheet" href="styles.css?v=64" />
 </head>
 <body>
 <div class="app">
@@ -35,13 +35,13 @@
       <div class="stage" id="stage" data-phase="before">
         <div class="figure" id="figure">
           <img class="figure-ambient" src="assets/body-current.webp" alt="" aria-hidden="true" draggable="false" />
-          <img class="figure-img before" src="assets/body-current.webp" alt="9/21·10/26 체형 이미지" draggable="false" />
+          <img class="figure-img before" src="assets/body-current.webp" alt="9/21·10/26·11/26 체형 이미지" draggable="false" />
           <img class="figure-img after" id="figure-goal" src="assets/body-goal.webp" alt="목표 체형 이미지" draggable="false" />
         </div>
         <div class="stage-overlay">
           <div class="chip-row">
-            <span class="pill" id="pill-date">2026-10-26</span>
-            <span class="pill ghost" id="pill-shape">체지방 29.9%</span>
+            <span class="pill" id="pill-date">2026.11.26</span>
+            <span class="pill ghost" id="pill-shape">체지방 29.2% · 85.6kg</span>
           </div>
           <div class="hint" id="figure-hint">슬라이더를 움직이면 체형이 서서히 변합니다</div>
         </div>
@@ -51,8 +51,8 @@
       <div class="panel">
         <div class="record-head">
           <div>
-            <div class="record-date" id="record-date">2026-10-26</div>
-            <div class="record-label" id="record-label">2차 측정</div>
+            <div class="record-date" id="record-date">2026.11.26</div>
+            <div class="record-label" id="record-label">3차 측정</div>
           </div>
           <div class="score-ring" id="score-ring"><b id="score-value">68</b><span>점</span></div>
         </div>
@@ -60,7 +60,7 @@
         <div class="stats" id="stats"></div>
 
         <div class="timeline">
-          <input type="range" id="date-slider" min="0" max="2" step="0.001" value="1" aria-label="날짜 선택" />
+          <input type="range" id="date-slider" min="0" max="3" step="0.001" value="2" aria-label="날짜 선택" />
           <div class="timeline-labels" id="timeline-labels"></div>
         </div>
 
@@ -82,7 +82,7 @@
       <div class="card compare-card">
         <div class="card-head">
           <h2>비포 / 애프터</h2>
-          <span class="muted" id="compare-range">87.7kg · 29.9% → 75.0kg · 17.5%</span>
+          <span class="muted" id="compare-range">87.7kg · 30.1% → 75.0kg · 17.5%</span>
         </div>
         <div class="compare" id="compare" data-side="even">
           <img class="compare-img after" src="assets/body-goal.webp" alt="목표 체형 이미지" draggable="false" />
@@ -99,7 +99,7 @@
       <div class="card">
         <div class="card-head">
           <h2>수치 비교</h2>
-          <span class="muted">9/21 → 10/26 → 목표</span>
+          <span class="muted">9/21 → 10/26 → 11/26 → 목표</span>
         </div>
         <div class="table-wrap">
           <table class="cmp-table" id="cmp-table"></table>
@@ -139,15 +139,15 @@
     <form id="record-form">
       <label>측정일 <input type="date" name="date" required /></label>
       <div class="grid2">
-        <label>체중 (kg) <input type="number" step="0.1" name="weight" required placeholder="87.7" /></label>
-        <label>골격근량 (kg) <input type="number" step="0.1" name="skeletalMuscle" required placeholder="34.6" /></label>
-        <label>체지방률 (%) <input type="number" step="0.1" name="bodyFatPct" required placeholder="29.9" /></label>
-        <label>체지방량 (kg) <input type="number" step="0.1" name="bodyFatMass" placeholder="26.2" /></label>
-        <label>BMI <input type="number" step="0.1" name="bmi" placeholder="28.3" /></label>
+        <label>체중 (kg) <input type="number" step="0.1" name="weight" required placeholder="85.6" /></label>
+        <label>골격근량 (kg) <input type="number" step="0.1" name="skeletalMuscle" required placeholder="34.1" /></label>
+        <label>체지방률 (%) <input type="number" step="0.1" name="bodyFatPct" required placeholder="29.2" /></label>
+        <label>체지방량 (kg) <input type="number" step="0.1" name="bodyFatMass" placeholder="25.0" /></label>
+        <label>BMI <input type="number" step="0.1" name="bmi" placeholder="27.6" /></label>
         <label>인바디점수 <input type="number" step="1" name="score" placeholder="68" /></label>
-        <label>복부지방률 <input type="number" step="0.01" name="waistRatio" placeholder="1.02" /></label>
-        <label>내장지방레벨 <input type="number" step="1" name="visceralFat" placeholder="12" /></label>
-        <label>기초대사량 (kcal) <input type="number" step="1" name="bmr" placeholder="1698" /></label>
+        <label>복부지방률 <input type="number" step="0.01" name="waistRatio" placeholder="0.99" /></label>
+        <label>내장지방레벨 <input type="number" step="1" name="visceralFat" placeholder="11" /></label>
+        <label>기초대사량 (kcal) <input type="number" step="1" name="bmr" placeholder="1679" /></label>
       </div>
       <p class="form-hint">비워 둔 항목은 체지방률로 추정해 화면 수치에 반영합니다.</p>
       <button class="primary" type="submit">기록 저장</button>
@@ -157,6 +157,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module" src="app.js?v=63"></script>
+<script type="module" src="app.js?v=64"></script>
 </body>
 </html>

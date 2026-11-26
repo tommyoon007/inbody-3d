@@ -50,7 +50,7 @@ GitHub Pages: https://tommyoon007.github.io/inbody-3d/
 
 ## 파일
 
-- `assets/body-current.webp` — 현재 체형(87.7kg · 29.9%) 이미지 (원본 `body-current.png`)
+- `assets/body-current.webp` — 실측 체형 이미지 (10/26 측정 87.7kg · 29.9% 기준, 원본 `body-current.png`). 새 측정이 쌓여도 새 이미지를 만들기 전까지는 이 이미지를 그대로 씁니다.
 - `assets/body-goal.webp` — 목표 체형(75.0kg · 17.5%) 이미지 (원본 `body-goal.png`)
 - `index.html`, `app.js`, `styles.css` — 화면·변신 로직·스타일 (외부 라이브러리 없음)
 - `sw.js`, `manifest.json` — 오프라인 PWA
