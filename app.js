@@ -481,7 +481,7 @@ class Character3D {
 
     this.params = paramsAt(state.index);
     this.cur = { ...this.params };
-    this.applyShape(this.cur);
+    this.updateShape(this.cur);
 
     // 포즈 상태
     this.pose = {
