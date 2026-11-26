@@ -650,7 +650,7 @@ input[type="range"]::-moz-range-thumb {
 .mv-squat .q-leg-b { transform-origin: 34px 36px; animation: sqThighB 2.8s ease-in-out infinite alternate; }
 .mv-squat .q-shin-b { transform-origin: 44px 44px; animation: sqShinB 2.8s ease-in-out infinite alternate; }
 .mv-squat .q-arm { transform-origin: 31px 24px; animation: sqArm 2.8s ease-in-out infinite alternate; }
-@keyframes sqBody { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(3.5px) rotate(4deg); } }
+@keyframes sqBody { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(4px) rotate(9deg); } }
 @keyframes sqThigh { from { transform: rotate(0deg); } to { transform: rotate(-22deg); } }
 @keyframes sqShin { from { transform: rotate(0deg); } to { transform: rotate(17deg); } }
 @keyframes sqThighB { from { transform: rotate(0deg); } to { transform: rotate(-19deg); } }
@@ -687,13 +687,13 @@ input[type="range"]::-moz-range-thumb {
 .mv-pulldown .d-fore-a { transform-origin: 30px 34px; animation: pdForeA 2.6s ease-in-out infinite alternate; }
 .mv-pulldown .d-arm-b { transform-origin: 39px 41px; animation: pdArmB 2.6s ease-in-out infinite alternate; }
 .mv-pulldown .d-fore-b { transform-origin: 46px 34px; animation: pdForeB 2.6s ease-in-out infinite alternate; }
-@keyframes pdBar { from { transform: translateY(0); } to { transform: translateY(4px); } }
-@keyframes pdCable { from { transform: scaleY(1); } to { transform: scaleY(1.33); } }
-@keyframes pdBody { from { transform: translateY(0); } to { transform: translateY(0.8px); } }
-@keyframes pdArmA { from { transform: rotate(0deg); } to { transform: rotate(-10deg); } }
-@keyframes pdForeA { from { transform: rotate(0deg); } to { transform: rotate(25deg); } }
-@keyframes pdArmB { from { transform: rotate(0deg); } to { transform: rotate(10deg); } }
-@keyframes pdForeB { from { transform: rotate(0deg); } to { transform: rotate(-25deg); } }
+@keyframes pdBar { from { transform: translateY(0); } to { transform: translateY(3px); } }
+@keyframes pdCable { from { transform: scaleY(1); } to { transform: scaleY(1.25); } }
+@keyframes pdBody { from { transform: translateY(0); } to { transform: translateY(0.5px); } }
+@keyframes pdArmA { from { transform: rotate(0deg); } to { transform: rotate(-6deg); } }
+@keyframes pdForeA { from { transform: rotate(0deg); } to { transform: rotate(14deg); } }
+@keyframes pdArmB { from { transform: rotate(0deg); } to { transform: rotate(6deg); } }
+@keyframes pdForeB { from { transform: rotate(0deg); } to { transform: rotate(-14deg); } }
 
 /* ---------- 시티드 로우 ---------- */
 .mv-row .r-torso { transform-origin: 24px 44px; animation: rowTorso 2.6s ease-in-out infinite alternate; }
@@ -720,12 +720,12 @@ input[type="range"]::-moz-range-thumb {
 .mv-shoulderpress .h-fore-b { transform-origin: 46px 21px; animation: spForeB 2.4s ease-in-out infinite alternate; }
 .mv-shoulderpress .h-dumb-a { animation: spDumbA 2.4s ease-in-out infinite alternate; }
 .mv-shoulderpress .h-dumb-b { animation: spDumbB 2.4s ease-in-out infinite alternate; }
-@keyframes spArmA { from { transform: rotate(0deg); } to { transform: rotate(14deg); } }
-@keyframes spForeA { from { transform: rotate(0deg); } to { transform: rotate(-10deg); } }
-@keyframes spArmB { from { transform: rotate(0deg); } to { transform: rotate(-14deg); } }
-@keyframes spForeB { from { transform: rotate(0deg); } to { transform: rotate(10deg); } }
-@keyframes spDumbA { from { transform: translate(0, 0); } to { transform: translate(1.9px, -1.6px); } }
-@keyframes spDumbB { from { transform: translate(0, 0); } to { transform: translate(-1.9px, -1.6px); } }
+@keyframes spArmA { from { transform: rotate(0deg); } to { transform: rotate(13deg); } }
+@keyframes spForeA { from { transform: rotate(0deg); } to { transform: rotate(-18deg); } }
+@keyframes spArmB { from { transform: rotate(0deg); } to { transform: rotate(-13deg); } }
+@keyframes spForeB { from { transform: rotate(0deg); } to { transform: rotate(18deg); } }
+@keyframes spDumbA { from { transform: translate(0, 0); } to { transform: translate(1px, -4px); } }
+@keyframes spDumbB { from { transform: translate(0, 0); } to { transform: translate(-1px, -4px); } }
 
 /* ---------- 플랭크 (코어 라인 맥동) ---------- */
 .mv-plank .k-fig { animation: plankBreath 3.6s ease-in-out infinite; }
