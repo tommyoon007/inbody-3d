@@ -5,8 +5,8 @@ import { MOVES } from './moves.js';
 
 const HEIGHT_CM = 176;
 const STORE_KEY = 'inbody3d.records.v1';
-const IMG_SOURCE_DATE = '2026-10-26'; // assets/body-current.webp 를 만든 측정일
-const IMG_SOURCE_SHORT = '10/26';
+const IMG_SOURCE_DATE = '2026-11-26'; // assets/body-current.webp 를 만든 측정일
+const IMG_SOURCE_SHORT = '11/26';
 
 const state = {
   mode: 'model',
