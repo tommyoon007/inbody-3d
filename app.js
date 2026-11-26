@@ -593,15 +593,6 @@ class Character3D {
     this.torso.receiveShadow = true;
     hips.add(this.torso);
 
-    /* --- 가슴(가슴근육 볼륨) --- */
-    this.pecs = [];
-    for (const sgn of [-1, 1]) {
-      const pec = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), this.mat.skin);
-      pec.castShadow = true;
-      hips.add(pec);
-      this.pecs.push({ mesh: pec, sgn });
-    }
-
     /* --- 목 --- */
     this.neck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 20), this.mat.skin);
     this.neck.castShadow = true;
@@ -753,13 +744,6 @@ class Character3D {
 
     updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
 
-    // 가슴 볼륨: 근육량이 높을수록 크고 또렷, 지방이 많으면 부드럽게 퍼짐
-    const pecW = 0.030 + (p.chestD - 0.10) * 0.42 + (p.armR - 0.036) * 0.30;
-    for (const { mesh, sgn } of this.pecs) {
-      mesh.scale.set(pecW * 1.15, pecW * 0.85, pecW * 0.30);
-      mesh.position.set(sgn * pecW * 1.02, torsoH * 0.78, p.chestD * 0.92);
-      mesh.rotation.set(-0.12, 0, sgn * 0.10);
-    }
 
     // 목
     this.neck.scale.set(p.neckR, 0.10, p.neckR * 1.02);
@@ -774,10 +758,10 @@ class Character3D {
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.93);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.84);
       a.shoulder.position.y = torsoH * 0.90;
-      a.deltoid.scale.set(p.armR * 1.25, p.armR * 1.5, p.armR * 1.2);
-      a.deltoid.position.set(0, -p.armR * 0.35, 0);
+      a.deltoid.scale.set(p.armR * 1.1, p.armR * 1.25, p.armR * 1.05);
+      a.deltoid.position.set(a.sgn * p.armR * 0.25, -p.armR * 0.15, 0);
       setLimb(a.upper, p.armR, 0.31);
       a.elbow.position.y = -0.305;
       setLimb(a.fore, p.armR * 0.88, 0.28);
