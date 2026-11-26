@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { Anatomy, deriveParams, makeHeadTexture, makeSkinBump } from './body.js';
 
 /* =========================================================
    1. 데이터
@@ -16,6 +18,7 @@ const state = {
   ready: false,
 };
 
+const PI = Math.PI;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeInOut = t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
@@ -67,32 +70,14 @@ async function loadRecords() {
   state.records = [...measured, ...goal];
 }
 
-/* 체형 파라미터 (인바디 수치 → 3D 비율) */
+/* 체형 파라미터 (인바디 수치 → 해부 비율) */
 function morphTargets(r) {
-  const fat = clamp((r.bodyFatPct - 15) / (32 - 15), 0, 1.3);
-  const mus = clamp((r.skeletalMuscle - 33) / (37 - 33), 0, 1.2);
-  const wN = clamp((waistOf(r) - 0.84) / (1.04 - 0.84), 0, 1.3);
-  const vN = clamp((visceralOf(r) - 6) / (13 - 6), 0, 1.3);
-
-  const waistW = 0.138 + 0.038 * wN + 0.008 * fat;
-  const waistD = 0.088 + 0.012 * wN;
-  const chestD = 0.100 + 0.022 * mus + 0.026 * fat;
-  return {
-    shoulder: 0.148 + 0.030 * mus + 0.004 * fat,   // 가슴 폭(반)
-    chestD,
-    waistW,
-    waistD,
-    bellyD: waistD + 0.008 + 0.030 * fat + 0.008 * vN,
-    belly: 0.004 + 0.024 * fat + 0.010 * vN,
-    hipW: 0.145 + 0.026 * fat + 0.005 * mus,
-    hipD: 0.095 + 0.014 * fat,
-    thighR: 0.074 + 0.018 * fat - 0.001 * mus,
-    armR: 0.040 + 0.009 * fat + 0.014 * mus,
-    calfR: 0.045 + 0.008 * fat + 0.006 * mus,
-    neckR: 0.048 + 0.008 * fat,
-    headW: 0.098 + 0.008 * fat,
-    faceFull: fat,
-  };
+  return deriveParams({
+    bodyFatPct: r.bodyFatPct,
+    skeletalMuscle: r.skeletalMuscle,
+    waistRatio: waistOf(r),
+    visceralFat: visceralOf(r),
+  });
 }
 
 function paramsAt(fIndex) {
@@ -371,504 +356,247 @@ function refreshUI() {
     `${fmt(state.records[0].weight)}kg · ${fmt(state.records[0].bodyFatPct)}% → ` +
     `${fmt(state.records[state.records.length - 1].weight)}kg · ${fmt(state.records[state.records.length - 1].bodyFatPct)}%`;
 }
-
 /* =========================================================
-   3. 3D 캐릭터
+   3. 3D 캐릭터 (해부학 메쉬 + 스키닝)
    ========================================================= */
 const COLORS = {
-  skin: 0xd9a07c,
-  skinDark: 0xc98f6b,
-  shirt: 0xb7bcc5,
-  shorts: 0x171b22,
-  shoe: 0xeef1f4,
-  hair: 0x14100f,
-  floor: 0x0f1620,
+  skin: 0xe2a077,
+  shorts: 0x141a22,
+  hair: 0x100d0c,
+  floor: 0x0b1017,
 };
-
-function buildTubeGeometry(rings, radial) {
-  const geo = new THREE.BufferGeometry();
-  const count = rings * radial + 2;
-  const pos = new Float32Array(count * 3);
-  const idx = [];
-  for (let i = 0; i < rings - 1; i++) {
-    for (let j = 0; j < radial; j++) {
-      const a = i * radial + j;
-      const b = i * radial + ((j + 1) % radial);
-      const c = (i + 1) * radial + j;
-      const d = (i + 1) * radial + ((j + 1) % radial);
-      idx.push(a, b, c, b, d, c);
-    }
-  }
-  const bc = rings * radial, tc = rings * radial + 1;
-  for (let j = 0; j < radial; j++) {
-    idx.push(bc, (j + 1) % radial, j);
-    idx.push(tc, (rings - 1) * radial + j, (rings - 1) * radial + ((j + 1) % radial));
-  }
-  geo.setIndex(idx);
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.userData = { rings, radial, bc, tc };
-  return geo;
-}
-
-function updateTube(geo, profileFn, y0, height) {
-  const { rings, radial, bc, tc } = geo.userData;
-  const pos = geo.attributes.position.array;
-  for (let i = 0; i < rings; i++) {
-    const t = i / (rings - 1);
-    const { rx, rz, z } = profileFn(t);
-    const y = y0 + t * height;
-    for (let j = 0; j < radial; j++) {
-      const ang = (j / radial) * Math.PI * 2;
-      const k = (i * radial + j) * 3;
-      pos[k] = Math.sin(ang) * rx;
-      pos[k + 1] = y;
-      pos[k + 2] = Math.cos(ang) * rz + z;
-    }
-  }
-  pos[bc * 3] = 0; pos[bc * 3 + 1] = y0; pos[bc * 3 + 2] = 0;
-  pos[tc * 3] = 0; pos[tc * 3 + 1] = y0 + height; pos[tc * 3 + 2] = 0;
-  geo.attributes.position.needsUpdate = true;
-  geo.computeVertexNormals();
-  geo.computeBoundingSphere();
-}
-
-const CAPSULE = new THREE.CapsuleGeometry(1, 1, 8, 20); // 총 높이 3
-
-function makeLimb(material) {
-  const m = new THREE.Mesh(CAPSULE, material);
-  m.castShadow = true;
-  m.receiveShadow = true;
-  return m;
-}
-function setLimb(mesh, radius, length) {
-  mesh.scale.set(radius, length / 3, radius);
-  mesh.position.y = -length / 2;
-}
 
 class Character3D {
   constructor(canvas) {
     this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.0;
 
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x0a0e13);
-    this.scene.fog = new THREE.Fog(0x0a0e13, 3.4, 8);
+    this.scene.background = new THREE.Color(COLORS.floor);
+    this.scene.fog = new THREE.Fog(COLORS.floor, 4.2, 9.5);
 
     this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
-    this.camera.position.set(0.45, 1.22, 2.95);
+    this.camera.position.set(0.42, 1.16, 3.25);
 
     this.controls = new OrbitControls(this.camera, canvas);
-    this.controls.target.set(0, 0.92, 0);
+    this.controls.target.set(0, 0.94, 0);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.075;
     this.controls.enablePan = false;
-    this.controls.minDistance = 1.5;
+    this.controls.minDistance = 1.4;
     this.controls.maxDistance = 5.5;
-    this.controls.minPolarAngle = 0.5;
-    this.controls.maxPolarAngle = Math.PI * 0.54;
+    this.controls.minPolarAngle = 0.45;
+    this.controls.maxPolarAngle = Math.PI * 0.53;
     this.controls.rotateSpeed = 0.85;
     this.controls.zoomSpeed = 0.8;
     this.controls.update();
 
     const _q = new URLSearchParams(location.search);
-    if (_q.get('view') === 'head') {
-      this.camera.position.set(0, 1.55, 0.72);
-      this.controls.target.set(0, 1.55, 0);
+    this.headView = _q.get('view') === 'head';
+    if (this.headView) {
+      this.camera.position.set(0.06, 1.63, 0.72);
+      this.controls.target.set(0, 1.62, 0);
       this.controls.update();
     }
+    this.lod = _q.get('lod');   // 저해상도 렌더(디버그)
+    const camQ = _q.get('cam');
+    if (camQ) {
+      const v = camQ.split(',').map(Number);
+      if (v.length === 6 && v.every(n => !isNaN(n))) {
+        this.camera.position.set(v[0], v[1], v[2]);
+        this.controls.target.set(v[3], v[4], v[5]);
+        this.controls.update();
+      }
+    }
 
+    this._env();
     this._lights();
     this._floor();
     this._materials();
-    this._build();
+
+    this.anatomy = new Anatomy(paramsAt(state.index), this.mats, this.headMat.map);
+    this.scene.add(this.anatomy.root);
 
     this.params = paramsAt(state.index);
     this.cur = { ...this.params };
-    this.updateShape(this.cur);
+    this.headTex = this._loadFace();
 
-    // 포즈 상태
     this.pose = {
-      shLx: 0, shLz: -0.10, shRx: 0, shRz: 0.10,
-      elLx: 0.12, elRx: 0.12,
-      hipLx: 0, hipRx: 0, kneeLx: 0.04, kneeRx: 0.04,
-      spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0,
-      breath: 0,
+      hipsX: 0, hipsY: 0, spineX: 0, spineY: 0, chestX: 0, chestY: 0,
+      neckX: 0, neckY: 0, headX: 0, headY: 0,
+      armLX: 0, armRX: 0, armLZ: 0, armRZ: 0,
+      elbLX: 0.14, elbRX: 0.14, handLX: 0, handRX: 0,
+      thighLX: 0, thighRX: 0, thighLZ: 0, thighRZ: 0,
+      kneeLX: 0.04, kneeRX: 0.04, footLX: 0, footRX: 0, breath: 0,
     };
     this.clock = new THREE.Clock();
     this.time = 0;
+    this._lastBuild = 0;
 
     this._observeResize();
     this._loop();
   }
 
+  _env() {
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    const env = new RoomEnvironment();
+    this.scene.environment = pmrem.fromScene(env, 0.04).texture;
+    env.dispose?.();
+    pmrem.dispose();
+  }
+
   _lights() {
-    const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x1a222e, 0.85);
+    const hemi = new THREE.HemisphereLight(0xa9cbf5, 0x161a20, 0.55);
     this.scene.add(hemi);
 
-    const key = new THREE.DirectionalLight(0xffffff, 2.1);
-    key.position.set(2.2, 3.6, 2.8);
+    const key = new THREE.DirectionalLight(0xfff1e2, 2.35);
+    key.position.set(1.9, 3.1, 2.5);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
     key.shadow.camera.near = 0.5;
     key.shadow.camera.far = 12;
-    key.shadow.camera.left = -1.6;
-    key.shadow.camera.right = 1.6;
-    key.shadow.camera.top = 2.6;
-    key.shadow.camera.bottom = -0.4;
-    key.shadow.bias = -0.0012;
-    key.shadow.radius = 3;
+    key.shadow.camera.left = -1.4;
+    key.shadow.camera.right = 1.4;
+    key.shadow.camera.top = 2.4;
+    key.shadow.camera.bottom = -0.3;
+    key.shadow.bias = -0.0009;
+    key.shadow.radius = 4;
     this.scene.add(key);
+    this.key = key;
 
-    const fill = new THREE.DirectionalLight(0x9dc4ff, 0.7);
-    fill.position.set(-2.6, 1.8, 1.6);
+    const fill = new THREE.DirectionalLight(0x9dbcf0, 0.62);
+    fill.position.set(-2.5, 1.55, 1.7);
     this.scene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0x9fc4ff, 1.1);
-    rim.position.set(-0.6, 2.2, -3.2);
+    const rim = new THREE.DirectionalLight(0xbcd4ff, 1.55);
+    rim.position.set(-0.7, 2.1, -2.9);
     this.scene.add(rim);
 
-    const rim2 = new THREE.DirectionalLight(0x2ee6a8, 0.35);
-    rim2.position.set(2.4, 1.2, -2.6);
+    const rim2 = new THREE.DirectionalLight(0x2ee6a8, 0.55);
+    rim2.position.set(2.3, 1.1, -2.4);
     this.scene.add(rim2);
+
+    const bounce = new THREE.DirectionalLight(0x5b7a9c, 0.28);
+    bounce.position.set(0, -1.4, 1.6);
+    this.scene.add(bounce);
   }
 
   _floor() {
+    // 부드러운 조명 웅덩이
     const c = document.createElement('canvas');
     c.width = c.height = 256;
     const g = c.getContext('2d');
-    const grd = g.createRadialGradient(128, 128, 10, 128, 128, 128);
-    grd.addColorStop(0, 'rgba(46,230,168,0.30)');
-    grd.addColorStop(0.45, 'rgba(40,120,160,0.10)');
+    const grd = g.createRadialGradient(128, 128, 8, 128, 128, 128);
+    grd.addColorStop(0, 'rgba(46,230,168,0.22)');
+    grd.addColorStop(0.45, 'rgba(40,110,150,0.09)');
     grd.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = grd;
     g.fillRect(0, 0, 256, 256);
     const tex = new THREE.CanvasTexture(c);
     const disc = new THREE.Mesh(
-      new THREE.CircleGeometry(1.5, 64),
+      new THREE.CircleGeometry(1.6, 64),
       new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
     );
     disc.rotation.x = -Math.PI / 2;
-    disc.position.y = 0.002;
+    disc.position.y = 0.0015;
     this.scene.add(disc);
 
     const grid = new THREE.GridHelper(3.2, 16, 0x1d5a54, 0x14232b);
     grid.material.transparent = true;
-    grid.material.opacity = 0.28;
-    grid.position.y = 0.001;
+    grid.material.opacity = 0.22;
+    grid.position.y = 0.0008;
     this.scene.add(grid);
+
+    // 그림자 받이
+    const sp = new THREE.Mesh(
+      new THREE.PlaneGeometry(4, 4),
+      new THREE.ShadowMaterial({ opacity: 0.45 })
+    );
+    sp.rotation.x = -Math.PI / 2;
+    sp.position.y = 0.0005;
+    sp.receiveShadow = true;
+    this.scene.add(sp);
   }
 
   _materials() {
-    this.mat = {
-      skin: new THREE.MeshStandardMaterial({ color: COLORS.skin, roughness: 0.62, metalness: 0.02 }),
-      shirt: new THREE.MeshStandardMaterial({ color: COLORS.shirt, roughness: 0.88, metalness: 0.0 }),
-      shorts: new THREE.MeshStandardMaterial({ color: COLORS.shorts, roughness: 0.85 }),
-      shoe: new THREE.MeshStandardMaterial({ color: COLORS.shoe, roughness: 0.55 }),
-      hair: new THREE.MeshStandardMaterial({ color: COLORS.hair, roughness: 0.45, metalness: 0.12 }),
-    };
-  }
+    const bump = makeSkinBump();
+    bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
+    bump.repeat.set(5, 5);
 
-  _build() {
-    const S = this.scene;
-    this.root = new THREE.Group();
-    S.add(this.root);
-
-    const body = new THREE.Group();       // 전체 상하 흔들림
-    this.root.add(body);
-    this.body = body;
-
-    const hips = new THREE.Group();       // 골반 피벗 (y=0.88)
-    hips.position.y = 0.86;
-    body.add(hips);
-    this.hips = hips;
-
-    /* --- 몸통 (상의 없이 피부) --- */
-    this.torsoGeo = buildTubeGeometry(20, 30);
-    this.torso = new THREE.Mesh(this.torsoGeo, this.mat.skin);
-    this.torso.castShadow = true;
-    this.torso.receiveShadow = true;
-    hips.add(this.torso);
-
-    /* --- 목 --- */
-    this.neck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 20), this.mat.skin);
-    this.neck.castShadow = true;
-    this.neck.position.y = 0.60;
-    hips.add(this.neck);
-
-    /* --- 머리 --- */
-    this.head = new THREE.Group();
-    this.head.position.y = 0.66;
-    hips.add(this.head);
-
-    this.headShape = new THREE.Group();
-    this.head.add(this.headShape);
-
-    const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.90, 40, 30), this.mat.skin);
-    headSphere.castShadow = true;
-    this.headShape.add(headSphere);
-
-    // 얼굴 텍스처 (머리 앞면)
-    const tex = new THREE.TextureLoader().load('assets/face-tex.png', t => {
-      t.colorSpace = THREE.SRGBColorSpace;
-      t.anisotropy = 4;
-      this.faceReady = true;
+    const skin = new THREE.MeshPhysicalMaterial({
+      color: COLORS.skin,
+      roughness: 0.55,
+      metalness: 0.0,
+      sheen: 0.35,
+      sheenColor: new THREE.Color(0xffa184),
+      sheenRoughness: 0.8,
+      clearcoat: 0.10,
+      clearcoatRoughness: 0.62,
+      envMapIntensity: 0.55,
+      bumpMap: bump,
+      bumpScale: 0.0014,
     });
-    this.faceTex = tex;
-    const FACE_ARC = 2.95;
-    const faceGeo = new THREE.SphereGeometry(1.012, 64, 48,
-      Math.PI / 2 - FACE_ARC / 2, FACE_ARC,
-      0.28, 2.05);
-    this.faceMat = new THREE.MeshStandardMaterial({
-      map: tex, transparent: true, alphaTest: 0.45,
-      roughness: 0.78, metalness: 0.0,
-      polygonOffset: true, polygonOffsetFactor: -2,
+
+    const head = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      roughness: 0.55,
+      metalness: 0.0,
+      sheen: 0.3,
+      sheenColor: new THREE.Color(0xffa184),
+      sheenRoughness: 0.8,
+      clearcoat: 0.10,
+      clearcoatRoughness: 0.62,
+      envMapIntensity: 0.55,
     });
-    this.face = new THREE.Mesh(faceGeo, this.faceMat);
-    this.headShape.add(this.face);
 
-    // 머리카락
-    const hairTop = new THREE.Mesh(
-      new THREE.SphereGeometry(0.96, 40, 24, 0, Math.PI * 2, 0, 0.34),
-      this.mat.hair
-    );
-    hairTop.castShadow = true;
-    this.headShape.add(hairTop);
-    const hairBack = new THREE.Mesh(
-      new THREE.SphereGeometry(0.97, 40, 24, Math.PI * 0.90, Math.PI * 1.20, 0.28, 1.15),
-      this.mat.hair
-    );
-    this.headShape.add(hairBack);
+    const shorts = new THREE.MeshPhysicalMaterial({
+      color: COLORS.shorts,
+      roughness: 0.86,
+      metalness: 0.02,
+      sheen: 0.5,
+      sheenColor: new THREE.Color(0x2a3d55),
+      sheenRoughness: 0.95,
+      envMapIntensity: 0.4,
+    });
 
-    /* --- 어깨/팔 --- */
-    this.arms = {};
-    for (const side of ['L', 'R']) {
-      const sgn = side === 'L' ? -1 : 1;      // L = -x
-      const shoulder = new THREE.Group();
-      shoulder.position.set(sgn * 0.16, 0.50, 0);
-      hips.add(shoulder);
+    const hair = new THREE.MeshPhysicalMaterial({
+      color: COLORS.hair,
+      roughness: 0.52,
+      metalness: 0.0,
+      sheen: 0.35,
+      sheenColor: new THREE.Color(0x35302e),
+      sheenRoughness: 0.6,
+      clearcoat: 0.12,
+      clearcoatRoughness: 0.5,
+      envMapIntensity: 0.45,
+    });
 
-      const shoulderCap = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 16), this.mat.skin);
-      shoulderCap.castShadow = true;
-      shoulder.add(shoulderCap);
-
-      const upper = makeLimb(this.mat.skin);
-      shoulder.add(upper);
-
-      const elbow = new THREE.Group();
-      elbow.position.y = -0.30;
-      shoulder.add(elbow);
-
-      const fore = makeLimb(this.mat.skin);
-      elbow.add(fore);
-
-      const hand = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), this.mat.skin);
-      hand.castShadow = true;
-      elbow.add(hand);
-
-      this.arms[side] = { sgn, shoulder, shoulderCap, upper, elbow, fore, hand };
-    }
-
-    /* --- 반바지(골반) --- */
-    this.shortsGeo = buildTubeGeometry(10, 26);
-    this.shortsMesh = new THREE.Mesh(this.shortsGeo, this.mat.shorts);
-    this.shortsMesh.castShadow = true;
-    hips.add(this.shortsMesh);
-
-    /* --- 다리 --- */
-    this.legs = {};
-    for (const side of ['L', 'R']) {
-      const sgn = side === 'L' ? -1 : 1;
-      const hip = new THREE.Group();
-      hip.position.set(sgn * 0.075, 0, 0);
-      hips.add(hip);
-
-      const thigh = makeLimb(this.mat.skin);
-      hip.add(thigh);
-
-      const shortLeg = makeLimb(this.mat.shorts);
-      hip.add(shortLeg);
-
-      const knee = new THREE.Group();
-      knee.position.y = -0.385;
-      hip.add(knee);
-
-      const kneeBall = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), this.mat.skin);
-      kneeBall.castShadow = true;
-      knee.add(kneeBall);
-
-      const shin = makeLimb(this.mat.skin);
-      knee.add(shin);
-
-      const foot = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), this.mat.shoe);
-      foot.castShadow = true;
-      foot.receiveShadow = true;
-      knee.add(foot);
-
-      this.legs[side] = { sgn, hip, thigh, shortLeg, knee, kneeBall, shin, foot };
-    }
-
+    this.matSkin = skin;
+    this.headMat = head;
+    this.mats = [skin, head, shorts, hair];
   }
 
-  _torsoProfile(p) {
-    const keys = [
-      { t: 0.00, rx: p.hipW * 0.96, rz: p.hipD * 0.94, z: 0 },
-      { t: 0.12, rx: p.hipW * 1.00, rz: p.bellyD * 0.88, z: p.belly * 0.25 },
-      { t: 0.28, rx: p.waistW * 1.02, rz: p.bellyD, z: p.belly },
-      { t: 0.44, rx: p.waistW * 0.99, rz: p.waistD + (p.bellyD - p.waistD) * 0.42, z: p.belly * 0.5 },
-      { t: 0.62, rx: (p.waistW + p.shoulder) * 0.54, rz: p.chestD, z: 0.004 },
-      { t: 0.84, rx: p.shoulder * 1.00, rz: p.chestD, z: 0 },
-      { t: 0.93, rx: p.shoulder * 0.94, rz: p.chestD * 0.88, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.72, rz: p.chestD * 0.78, z: 0 },
-    ];
-    return t => {
-      let i = 0;
-      while (i < keys.length - 2 && t > keys[i + 1].t) i++;
-      const a = keys[i], b = keys[i + 1];
-      const f = clamp((t - a.t) / (b.t - a.t || 1), 0, 1);
-      const e = f * f * (3 - 2 * f);
-      return {
-        rx: lerp(a.rx, b.rx, e),
-        rz: lerp(a.rz, b.rz, e),
-        z: lerp(a.z, b.z, e),
-      };
+  _loadFace() {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const tex = makeHeadTexture(img);
+        this.headMat.map = tex;
+        this.headMat.color.set(0xffffff);
+        this.headMat.needsUpdate = true;
+        this.faceReady = true;
+      } catch (e) {
+        console.warn('face texture', e);
+      }
     };
-  }
-
-  _applyLimbScale(p) {
-    const torsoH = 0.60;
-    this.torsoH = torsoH;
-
-    updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
-
-    // 목
-    this.neck.scale.set(p.neckR, 0.075, p.neckR * 1.02);
-    this.neck.position.y = torsoH + 0.005;
-
-    // 머리
-    const R = p.headW;
-    this.headShape.scale.set(R, R * 1.20, R * 1.04);
-    this.headShape.position.y = 0.10;
-    this.head.position.y = torsoH + 0.028;
-
-    // 팔
-    for (const side of ['L', 'R']) {
-      const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.94);
-      a.shoulder.position.y = torsoH * 0.89;
-      a.shoulderCap.scale.set(p.armR * 1.08, p.armR * 1.18, p.armR * 1.05);
-      a.shoulderCap.position.set(a.sgn * p.armR * 0.15, -p.armR * 0.15, 0);
-      setLimb(a.upper, p.armR, 0.31);
-      a.elbow.position.y = -0.305;
-      setLimb(a.fore, p.armR * 0.88, 0.28);
-      a.hand.scale.set(p.armR * 1.08, p.armR * 1.5, p.armR * 0.75);
-      a.hand.position.y = -0.30;
-    }
-
-    // 반바지
-    updateTube(this.shortsGeo, t => {
-      const w = lerp(1.03, 1.07, t);
-      return { rx: p.hipW * w, rz: p.hipD * w, z: 0 };
-    }, -0.195, 0.225);
-
-    // 다리
-    for (const side of ['L', 'R']) {
-      const L = this.legs[side];
-      L.hip.position.x = L.sgn * p.hipW * 0.50;
-      setLimb(L.thigh, p.thighR, 0.385);
-      L.shortLeg.scale.set(p.thighR * 1.12, 0.095, p.thighR * 1.12);
-      L.shortLeg.position.y = -0.125;
-      L.knee.position.y = -0.38;
-      L.kneeBall.scale.set(p.calfR * 0.92, p.calfR * 0.88, p.calfR * 0.94);
-      setLimb(L.shin, p.calfR * 0.95, 0.38);
-      L.foot.scale.set(0.095, 0.068, 0.24);
-      L.foot.position.set(0, -0.40, 0.055);
-    }
-  }
-
-  updateShape(params) {
-    this._applyLimbScale(params);
-  }
-
-  _poseTargets(dt) {
-    const t = this.time;
-    const p = { shLx: 0, shLz: -0.21, shRx: 0, shRz: 0.21, elLx: 0.14, elRx: 0.14,
-      hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
-      spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
-
-    if (state.anim === 'idle') {
-      const b = Math.sin(t * 1.5);
-      p.breath = b * 0.5;
-      p.shLz = -0.21 - b * 0.010;
-      p.shRz = 0.21 + b * 0.010;
-      p.shLx = Math.sin(t * 0.7) * 0.045;
-      p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
-      p.elLx = 0.16 + b * 0.02;
-      p.elRx = 0.16 + b * 0.02;
-      p.bodyY = b * 0.004;
-      p.headY = Math.sin(t * 0.42) * 0.06;
-      p.headX = Math.sin(t * 0.33) * 0.03;
-      p.spineY = Math.sin(t * 0.28) * 0.02;
-    } else if (state.anim === 'walk') {
-      const ph = t * 3.6;
-      const s = Math.sin(ph), c = Math.cos(ph);
-      p.hipLx = s * 0.46;
-      p.hipRx = -s * 0.46;
-      p.kneeLx = 0.10 + Math.max(0, -Math.sin(ph - 0.5)) * 0.85;
-      p.kneeRx = 0.10 + Math.max(0, -Math.sin(ph + Math.PI - 0.5)) * 0.85;
-      p.shLx = -s * 0.42;
-      p.shRx = s * 0.42;
-      p.shLz = -0.14; p.shRz = 0.14;
-      p.elLx = 0.22 + Math.max(0, s) * 0.3;
-      p.elRx = 0.22 + Math.max(0, -s) * 0.3;
-      p.bodyY = Math.abs(c) * 0.012 - 0.006;
-      p.spineY = s * 0.06;
-      p.headY = -s * 0.04;
-      p.breath = Math.sin(t * 1.4) * 0.3;
-    } else if (state.anim === 'pose') {
-      const b = Math.sin(t * 1.2);
-      p.shLz = -2.42 - b * 0.05;
-      p.shRz = 2.42 + b * 0.05;
-      p.shLx = 0.12; p.shRx = 0.12;
-      p.elLx = 0.55; p.elRx = 0.55;
-      p.hipLx = -0.06; p.hipRx = 0.06;
-      p.kneeLx = 0.06; p.kneeRx = 0.06;
-      p.spineX = -0.06 + b * 0.01;
-      p.headX = -0.12;
-      p.bodyY = b * 0.006;
-      p.breath = b * 0.6;
-    }
-    return p;
-  }
-
-  _applyPose(dt) {
-    const target = this._poseTargets(dt);
-    const k = 1 - Math.pow(0.001, dt);   // 부드러운 추적
-    for (const key in target) this.pose[key] = lerp(this.pose[key], target[key], k);
-    const P = this.pose;
-
-    this.hips.rotation.set(P.spineX, P.spineY, 0);
-    this.body.position.y = P.bodyY;
-
-    this.arms.L.shoulder.rotation.set(P.shLx, 0, P.shLz);
-    this.arms.R.shoulder.rotation.set(P.shRx, 0, P.shRz);
-    this.arms.L.elbow.rotation.set(P.elLx, 0, 0);
-    this.arms.R.elbow.rotation.set(P.elRx, 0, 0);
-
-    this.legs.L.hip.rotation.set(P.hipLx, 0, 0);
-    this.legs.R.hip.rotation.set(P.hipRx, 0, 0);
-    this.legs.L.knee.rotation.set(P.kneeLx, 0, 0);
-    this.legs.R.knee.rotation.set(P.kneeRx, 0, 0);
-
-    this.head.rotation.set(P.headX, P.headY, 0);
-
-    const br = 1 + P.breath * 0.012;
-    this.torso.scale.set(br, 1 + P.breath * 0.006, br);
+    img.onerror = () => { this.faceReady = true; };
+    img.src = 'assets/face-tex.png';
   }
 
   _observeResize() {
@@ -878,8 +606,7 @@ class Character3D {
       if (!w || !h) return;
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
-      // 모바일 세로 화면에서 인체가 잘리지 않도록 카메라 조정
-      this.camera.fov = w / h < 0.85 ? 40 : 34;
+      this.camera.fov = w / h < 0.9 ? 42 : 34;
       this.camera.updateProjectionMatrix();
     };
     this._resize = resize;
@@ -890,6 +617,62 @@ class Character3D {
 
   setParams(target) { this.targetParams = target; }
 
+  _poseTargets() {
+    const t = this.time;
+    const p = {
+      hipsX: 0, hipsY: 0, spineX: 0, spineY: 0, chestX: 0, chestY: 0,
+      neckX: 0, neckY: 0, headX: 0, headY: 0,
+      armLX: 0, armRX: 0, armLZ: 0, armRZ: 0, elbLX: -0.16, elbRX: -0.16,
+      handLX: 0, handRX: 0,
+      thighLX: 0, thighRX: 0, thighLZ: 0, thighRZ: 0,
+      kneeLX: 0.05, kneeRX: 0.05, footLX: 0, footRX: 0, breath: 0,
+    };
+    if (state.anim === 'idle') {
+      const b = Math.sin(t * 1.45);
+      p.breath = b * 0.55;
+      p.chestX = -0.012 + b * 0.012;
+      p.spineX = b * 0.006;
+      p.armLX = Math.sin(t * 0.62) * 0.05;
+      p.armRX = Math.sin(t * 0.62 + 1.7) * 0.05;
+      p.armLZ = 0.02 + b * 0.006;
+      p.armRZ = 0.02 + b * 0.006;
+      p.elbLX = -0.20 - b * 0.02;
+      p.elbRX = -0.20 - b * 0.02;
+      p.headY = Math.sin(t * 0.40) * 0.07;
+      p.headX = Math.sin(t * 0.31) * 0.02;
+      p.spineY = Math.sin(t * 0.24) * 0.02;
+    } else if (state.anim === 'walk') {
+      const ph = t * 3.4;
+      const s = Math.sin(ph), c = Math.cos(ph);
+      p.thighLX = s * 0.42;
+      p.thighRX = -s * 0.42;
+      p.kneeLX = 0.08 + Math.max(0, -Math.sin(ph - 0.6)) * 0.85;
+      p.kneeRX = 0.08 + Math.max(0, -Math.sin(ph + PI - 0.6)) * 0.85;
+      p.footLX = -s * 0.18;
+      p.footRX = s * 0.18;
+      p.armLX = -s * 0.34;
+      p.armRX = s * 0.34;
+      p.armLZ = 0.03; p.armRZ = 0.03;
+      p.elbLX = -0.24 - Math.max(0, s) * 0.36;
+      p.elbRX = -0.24 - Math.max(0, -s) * 0.36;
+      p.hipsY = s * 0.05;
+      p.spineY = -s * 0.05;
+      p.headY = s * 0.03;
+      p.breath = Math.sin(t * 1.2) * 0.3;
+    } else if (state.anim === 'pose') {
+      const b = Math.sin(t * 1.1);
+      p.armLZ = 0.92 + b * 0.03;
+      p.armRZ = 0.92 + b * 0.03;
+      p.armLX = -0.22; p.armRX = -0.22;
+      p.elbLX = -0.62; p.elbRX = -0.62;
+      p.thighLZ = 0.04; p.thighRZ = 0.04;
+      p.spineX = -0.03 + b * 0.006;
+      p.headX = -0.07;
+      p.breath = b * 0.6;
+    }
+    return p;
+  }
+
   _loop() {
     const render = () => {
       requestAnimationFrame(render);
@@ -898,7 +681,7 @@ class Character3D {
 
       // 체형 모프
       if (this.targetParams) {
-        const k = 1 - Math.pow(0.0008, dt);
+        const k = 1 - Math.pow(0.0007, dt);
         let changed = false;
         for (const key in this.targetParams) {
           const cur = this.cur[key];
@@ -908,15 +691,70 @@ class Character3D {
             changed = true;
           }
         }
-        if (changed) this.updateShape(this.cur);
+        if (changed) this._shapeDirty = true;
+      }
+      const now = performance.now();
+      if (this._shapeDirty && now - this._lastBuild > 40) {
+        this.anatomy.update(this.cur);
+        this._shapeDirty = false;
+        this._lastBuild = now;
+        this._needPose = true;
       }
 
-      this._applyPose(dt);
+      // 포즈
+      const target = this._poseTargets();
+      const kp = 1 - Math.pow(0.0015, dt);
+      let poseChanged = false;
+      for (const key in target) {
+        const d = target[key] - this.pose[key];
+        if (Math.abs(d) > 1e-5) { this.pose[key] = lerp(this.pose[key], target[key], kp); poseChanged = true; }
+      }
+      if (poseChanged || this._needPose) {
+        this.anatomy.setPose(this.pose);
+        this._needPose = false;
+      }
+
       this.controls.update();
       this.renderer.render(this.scene, this.camera);
     };
     render();
   }
+}
+
+/* ---- compare slider (드래그 방향 = 드러나는 체형) ---- */
+function initCompare() {
+  const wrap = $('#compare');
+  const clip = $('#compare-clip');
+  const handle = $('#compare-handle');
+  const hint = $('#compare-hint');
+  const tagBefore = $('#tag-before');
+  const tagAfter = $('#tag-after');
+  let dragging = false;
+
+  const setPos = x => {
+    const r = wrap.getBoundingClientRect();
+    const pct = clamp(((x - r.left) / r.width) * 100, 2, 98);
+    clip.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    handle.style.left = pct + '%';
+    wrap.dataset.side = pct > 50 ? 'before' : 'after';
+  };
+  const down = e => {
+    dragging = true;
+    setPos(e.touches ? e.touches[0].clientX : e.clientX);
+  };
+  const up = () => { dragging = false; };
+
+  handle.addEventListener('pointerdown', e => {
+    dragging = true;
+    handle.setPointerCapture?.(e.pointerId);
+  });
+  wrap.addEventListener('pointerdown', e => { dragging = true; setPos(e.clientX); });
+  window.addEventListener('pointermove', e => { if (dragging) setPos(e.clientX); });
+  window.addEventListener('pointerup', up);
+
+  clip.style.clipPath = 'inset(0 50% 0 0)';
+  handle.style.left = '50%';
+  wrap.dataset.side = 'even';
 }
 
 /* =========================================================
@@ -983,12 +821,13 @@ function play() {
 }
 
 function stopPlay() {
+  const wasPlaying = state.playing;
   state.playing = false;
   const btn = $('#play');
   btn.classList.remove('playing');
   btn.textContent = '▶ 변화 과정 보기';
-  // 멈출 때 가장 가까운 기록으로 정렬
-  applyIndex(Math.round(state.index));
+  // 재생 중이었다면 가장 가까운 기록으로 정렬
+  if (wasPlaying) applyIndex(Math.round(state.index));
 }
 
 function switchMode(mode) {
@@ -1006,40 +845,6 @@ function toast(msg) {
   el.classList.add('show');
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-/* ---- compare slider ---- */
-function initCompare() {
-  const wrap = $('#compare');
-  const clip = $('#compare-clip');
-  const handle = $('#compare-handle');
-  let dragging = false;
-
-  const setPos = x => {
-    const r = wrap.getBoundingClientRect();
-    const pct = clamp(((x - r.left) / r.width) * 100, 2, 98);
-    clip.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
-    handle.style.left = pct + '%';
-  };
-  const down = e => {
-    dragging = true;
-    setPos(e.touches ? e.touches[0].clientX : e.clientX);
-  };
-  const move = e => {
-    if (!dragging) return;
-    setPos(e.touches ? e.touches[0].clientX : e.clientX);
-    if (e.cancelable) e.preventDefault();
-  };
-  const up = () => { dragging = false; };
-
-  handle.addEventListener('pointerdown', e => { dragging = true; handle.setPointerCapture?.(e.pointerId); });
-  wrap.addEventListener('pointerdown', e => { dragging = true; setPos(e.clientX); });
-  window.addEventListener('pointermove', e => { if (dragging) setPos(e.clientX); });
-  window.addEventListener('pointerup', up);
-
-  // 초기 위치
-  clip.style.clipPath = 'inset(0 50% 0 0)';
-  handle.style.left = '50%';
 }
 
 /* ---- add record ---- */
@@ -1145,8 +950,9 @@ async function init() {
     }));
 
   $('#date-slider').addEventListener('input', e => {
+    const v = Number(e.target.value);
     stopPlay();
-    applyIndex(Number(e.target.value), { fromSlider: true });
+    applyIndex(v, { fromSlider: true });
   });
   $('#play').addEventListener('click', play);
 

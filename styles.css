@@ -299,9 +299,14 @@ input[type="range"]::-moz-range-thumb {
   font-size: 11px; font-weight: 800;
   padding: 5px 10px; border-radius: 999px;
   backdrop-filter: blur(8px);
+  transition: box-shadow .2s, transform .2s, opacity .2s;
 }
+.compare-tag em { font-style: normal; opacity: .85; margin: 0 1px; }
 .compare-tag.before { left: 12px; background: rgba(255,138,122,0.22); color: #ffc4ba; border: 1px solid rgba(255,138,122,0.4); }
 .compare-tag.after { right: 12px; background: rgba(46,230,168,0.2); color: #9df3d3; border: 1px solid rgba(46,230,168,0.4); }
+.compare[data-side="before"] .compare-tag.before { box-shadow: 0 0 0 2px rgba(255,138,122,0.55); transform: scale(1.04); }
+.compare[data-side="after"] .compare-tag.after { box-shadow: 0 0 0 2px rgba(46,230,168,0.55); transform: scale(1.04); }
+.caption b { color: #cdd8e5; font-weight: 700; }
 .compare-handle {
   position: absolute; top: 0; bottom: 0; left: 50%;
   width: 3px; background: rgba(255,255,255,0.85);

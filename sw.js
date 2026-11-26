@@ -1,7 +1,8 @@
-const CACHE = 'inbody3d-v3';
+const CACHE = 'inbody3d-v4';
 const CDN = [
   'https://unpkg.com/three@0.160.0/build/three.module.js',
   'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js',
+  'https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js',
 ];
 const IMG = [
   './assets/body-current.png',

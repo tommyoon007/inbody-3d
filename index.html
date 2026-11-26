@@ -94,16 +94,16 @@
           <h2>비포 / 애프터</h2>
           <span class="muted" id="compare-range">87.7kg · 29.9% → 75.0kg · 17.5%</span>
         </div>
-        <div class="compare" id="compare">
+        <div class="compare" id="compare" data-side="even">
           <img class="compare-img after" src="assets/body-goal.png" alt="목표 체형 3D 이미지" draggable="false" />
           <div class="compare-clip" id="compare-clip">
             <img class="compare-img before" src="assets/body-current.png" alt="현재 체형 3D 이미지" draggable="false" />
           </div>
-          <div class="compare-tag before" id="tag-before">비포 87.7kg</div>
-          <div class="compare-tag after">애프터 75.0kg</div>
+          <div class="compare-tag before" id="tag-before">비포 87.7kg <em>→</em></div>
+          <div class="compare-tag after" id="tag-after"><em>←</em> 애프터 75.0kg</div>
           <div class="compare-handle" id="compare-handle"><span></span></div>
         </div>
-        <p class="caption">왼쪽으로 밀면 지금 체형, 오른쪽으로 밀면 목표 체형이 보입니다.</p>
+        <p class="caption" id="compare-hint">손잡이를 <b>오른쪽으로 밀면 비포(지금 체형)</b>가, <b>왼쪽으로 밀면 애프터(목표 체형)</b>가 넓게 보입니다.</p>
       </div>
 
       <div class="card">
@@ -167,6 +167,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module" src="app.js?v=52"></script>
+<script type="module" src="app.js?v=61"></script>
 </body>
 </html>
