@@ -650,7 +650,7 @@ input[type="range"]::-moz-range-thumb {
 .mv-squat .q-leg-b { transform-origin: 34px 36px; animation: sqThighB 2.8s ease-in-out infinite alternate; }
 .mv-squat .q-shin-b { transform-origin: 44px 44px; animation: sqShinB 2.8s ease-in-out infinite alternate; }
 .mv-squat .q-arm { transform-origin: 31px 24px; animation: sqArm 2.8s ease-in-out infinite alternate; }
-@keyframes sqBody { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(4px) rotate(9deg); } }
+@keyframes sqBody { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(5px) rotate(14deg); } }
 @keyframes sqThigh { from { transform: rotate(0deg); } to { transform: rotate(-22deg); } }
 @keyframes sqShin { from { transform: rotate(0deg); } to { transform: rotate(17deg); } }
 @keyframes sqThighB { from { transform: rotate(0deg); } to { transform: rotate(-19deg); } }
