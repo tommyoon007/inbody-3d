@@ -90,7 +90,7 @@ function morphTargets(r) {
     armR: 0.040 + 0.009 * fat + 0.014 * mus,
     calfR: 0.045 + 0.008 * fat + 0.006 * mus,
     neckR: 0.048 + 0.008 * fat,
-    headW: 0.106 + 0.008 * fat,
+    headW: 0.098 + 0.008 * fat,
     faceFull: fat,
   };
 }
@@ -634,13 +634,13 @@ class Character3D {
 
     // 머리카락
     const hairTop = new THREE.Mesh(
-      new THREE.SphereGeometry(1.035, 40, 24, 0, Math.PI * 2, 0, 0.95),
+      new THREE.SphereGeometry(1.024, 40, 24, 0, Math.PI * 2, 0, 0.40),
       this.mat.hair
     );
     hairTop.castShadow = true;
     this.headShape.add(hairTop);
     const hairBack = new THREE.Mesh(
-      new THREE.SphereGeometry(1.042, 40, 24, Math.PI * 0.98, Math.PI * 1.04, 0.72, 0.85),
+      new THREE.SphereGeometry(1.036, 40, 24, Math.PI * 0.94, Math.PI * 1.12, 0.34, 1.05),
       this.mat.hair
     );
     this.headShape.add(hairBack);
@@ -753,8 +753,8 @@ class Character3D {
     // 머리
     const R = p.headW;
     this.headShape.scale.set(R, R * 1.20, R * 1.04);
-    this.headShape.position.y = 0.095;
-    this.head.position.y = torsoH + 0.012;
+    this.headShape.position.y = 0.10;
+    this.head.position.y = torsoH + 0.028;
 
     // 팔
     for (const side of ['L', 'R']) {
