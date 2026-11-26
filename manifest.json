@@ -1,7 +1,7 @@
 {
   "name": "인바디 3D · 윤홍기",
   "short_name": "인바디 3D",
-  "description": "인바디 기록을 3D 캐릭터와 변신 갤러리로 보는 개인 대시보드",
+  "description": "인바디 기록을 체형 이미지 변화와 변신 갤러리로 보는 개인 대시보드",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

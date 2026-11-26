@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { Anatomy, deriveParams, makeHeadTexture, makeSkinBump } from './body.js';
-
 /* =========================================================
    1. 데이터
    ========================================================= */
@@ -13,14 +8,10 @@ const state = {
   mode: 'model',
   records: [],
   index: 1,          // currently displayed record (float while morphing)
-  anim: 'idle',
   playing: false,
-  ready: false,
 };
 
-const PI = Math.PI;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const lerp = (a, b, t) => a + (b - a) * t;
 const easeInOut = t => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
 function fatMassOf(r) {
@@ -70,26 +61,33 @@ async function loadRecords() {
   state.records = [...measured, ...goal];
 }
 
-/* 체형 파라미터 (인바디 수치 → 해부 비율) */
-function morphTargets(r) {
-  return deriveParams({
-    bodyFatPct: r.bodyFatPct,
-    skeletalMuscle: r.skeletalMuscle,
-    waistRatio: waistOf(r),
-    visceralFat: visceralOf(r),
-  });
+/* 체형 이미지 변신 */
+function goalIndex() {
+  return state.records.findIndex(r => r.goal);
 }
 
-function paramsAt(fIndex) {
-  const n = state.records.length;
-  const i = clamp(fIndex, 0, n - 1);
-  const i0 = Math.floor(i), i1 = Math.min(n - 1, i0 + 1);
-  const t = i - i0;
-  const a = morphTargets(state.records[i0]);
-  const b = morphTargets(state.records[i1]);
-  const out = {};
-  for (const k in a) out[k] = lerp(a[k], b[k], t);
-  return out;
+/* fIndex 위치에 따라 목표 이미지를 얼마나 덮을지(0~1) */
+function figureProgress(fIndex) {
+  const gi = goalIndex();
+  if (gi < 1) return 0;
+  const from = gi - 1;            // 목표 바로 앞 기록(마지막 실측)
+  return clamp((fIndex - from) / (gi - from), 0, 1);
+}
+
+function applyFigure(fIndex) {
+  const t = figureProgress(fIndex);
+  const goal = $('#figure-goal');
+  if (goal) goal.style.opacity = t.toFixed(3);
+  const stage = $('#stage');
+  if (stage) stage.dataset.phase = t <= 0.001 ? 'before' : (t >= 0.999 ? 'goal' : 'morph');
+  const hint = $('#figure-hint');
+  if (hint) {
+    hint.textContent = state.playing
+      ? '변신 과정을 재생하는 중…'
+      : (t >= 0.999
+        ? '목표 체형 미리보기 · 슬라이더로 되돌아볼 수 있습니다'
+        : '슬라이더를 움직이면 체형이 서서히 변합니다');
+  }
 }
 
 function recordAt(fIndex) {
@@ -313,8 +311,8 @@ function renderGallery() {
     const src = isGoal ? 'assets/body-goal.png' : 'assets/body-current.png';
     let caption = '';
     if (!isGoal && i === 0 && rs.length > 2) caption = '10/26 체형 이미지로 표현';
-    if (!isGoal && i > 0) caption = '실제 측정 기반 3D 이미지';
-    if (isGoal) caption = '목표 체형 3D 이미지';
+    if (!isGoal && i > 0) caption = '실제 측정 기반 체형 이미지';
+    if (isGoal) caption = '목표 체형 이미지';
     if (r.local) caption = '이미지 없음 · 수치만 기록';
     return `<div class="g-card">
       <div class="g-thumb">${r.local
@@ -356,371 +354,6 @@ function refreshUI() {
     `${fmt(state.records[0].weight)}kg · ${fmt(state.records[0].bodyFatPct)}% → ` +
     `${fmt(state.records[state.records.length - 1].weight)}kg · ${fmt(state.records[state.records.length - 1].bodyFatPct)}%`;
 }
-/* =========================================================
-   3. 3D 캐릭터 (해부학 메쉬 + 스키닝)
-   ========================================================= */
-const COLORS = {
-  skin: 0xe2a077,
-  shorts: 0x141a22,
-  hair: 0x100d0c,
-  floor: 0x0b1017,
-};
-
-class Character3D {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
-
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(COLORS.floor);
-    this.scene.fog = new THREE.Fog(COLORS.floor, 4.2, 9.5);
-
-    this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
-    this.camera.position.set(0.42, 1.16, 3.25);
-
-    this.controls = new OrbitControls(this.camera, canvas);
-    this.controls.target.set(0, 0.94, 0);
-    this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.075;
-    this.controls.enablePan = false;
-    this.controls.minDistance = 1.4;
-    this.controls.maxDistance = 5.5;
-    this.controls.minPolarAngle = 0.45;
-    this.controls.maxPolarAngle = Math.PI * 0.53;
-    this.controls.rotateSpeed = 0.85;
-    this.controls.zoomSpeed = 0.8;
-    this.controls.update();
-
-    const _q = new URLSearchParams(location.search);
-    this.headView = _q.get('view') === 'head';
-    if (this.headView) {
-      this.camera.position.set(0.06, 1.63, 0.72);
-      this.controls.target.set(0, 1.62, 0);
-      this.controls.update();
-    }
-    this.lod = _q.get('lod');   // 저해상도 렌더(디버그)
-    const camQ = _q.get('cam');
-    if (camQ) {
-      const v = camQ.split(',').map(Number);
-      if (v.length === 6 && v.every(n => !isNaN(n))) {
-        this.camera.position.set(v[0], v[1], v[2]);
-        this.controls.target.set(v[3], v[4], v[5]);
-        this.controls.update();
-      }
-    }
-
-    this._env();
-    this._lights();
-    this._floor();
-    this._materials();
-
-    this.anatomy = new Anatomy(paramsAt(state.index), this.mats, this.headMat.map);
-    this.scene.add(this.anatomy.root);
-
-    this.params = paramsAt(state.index);
-    this.cur = { ...this.params };
-    this.headTex = this._loadFace();
-
-    this.pose = {
-      hipsX: 0, hipsY: 0, spineX: 0, spineY: 0, chestX: 0, chestY: 0,
-      neckX: 0, neckY: 0, headX: 0, headY: 0,
-      armLX: 0, armRX: 0, armLZ: 0, armRZ: 0,
-      elbLX: 0.14, elbRX: 0.14, handLX: 0, handRX: 0,
-      thighLX: 0, thighRX: 0, thighLZ: 0, thighRZ: 0,
-      kneeLX: 0.04, kneeRX: 0.04, footLX: 0, footRX: 0, breath: 0,
-    };
-    this.clock = new THREE.Clock();
-    this.time = 0;
-    this._lastBuild = 0;
-
-    this._observeResize();
-    this._loop();
-  }
-
-  _env() {
-    const pmrem = new THREE.PMREMGenerator(this.renderer);
-    const env = new RoomEnvironment();
-    this.scene.environment = pmrem.fromScene(env, 0.04).texture;
-    env.dispose?.();
-    pmrem.dispose();
-  }
-
-  _lights() {
-    const hemi = new THREE.HemisphereLight(0xa9cbf5, 0x161a20, 0.55);
-    this.scene.add(hemi);
-
-    const key = new THREE.DirectionalLight(0xfff1e2, 2.35);
-    key.position.set(1.9, 3.1, 2.5);
-    key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
-    key.shadow.camera.near = 0.5;
-    key.shadow.camera.far = 12;
-    key.shadow.camera.left = -1.4;
-    key.shadow.camera.right = 1.4;
-    key.shadow.camera.top = 2.4;
-    key.shadow.camera.bottom = -0.3;
-    key.shadow.bias = -0.0009;
-    key.shadow.radius = 4;
-    this.scene.add(key);
-    this.key = key;
-
-    const fill = new THREE.DirectionalLight(0x9dbcf0, 0.62);
-    fill.position.set(-2.5, 1.55, 1.7);
-    this.scene.add(fill);
-
-    const rim = new THREE.DirectionalLight(0xbcd4ff, 1.55);
-    rim.position.set(-0.7, 2.1, -2.9);
-    this.scene.add(rim);
-
-    const rim2 = new THREE.DirectionalLight(0x2ee6a8, 0.55);
-    rim2.position.set(2.3, 1.1, -2.4);
-    this.scene.add(rim2);
-
-    const bounce = new THREE.DirectionalLight(0x5b7a9c, 0.28);
-    bounce.position.set(0, -1.4, 1.6);
-    this.scene.add(bounce);
-  }
-
-  _floor() {
-    // 부드러운 조명 웅덩이
-    const c = document.createElement('canvas');
-    c.width = c.height = 256;
-    const g = c.getContext('2d');
-    const grd = g.createRadialGradient(128, 128, 8, 128, 128, 128);
-    grd.addColorStop(0, 'rgba(46,230,168,0.22)');
-    grd.addColorStop(0.45, 'rgba(40,110,150,0.09)');
-    grd.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = grd;
-    g.fillRect(0, 0, 256, 256);
-    const tex = new THREE.CanvasTexture(c);
-    const disc = new THREE.Mesh(
-      new THREE.CircleGeometry(1.6, 64),
-      new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })
-    );
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.y = 0.0015;
-    this.scene.add(disc);
-
-    const grid = new THREE.GridHelper(3.2, 16, 0x1d5a54, 0x14232b);
-    grid.material.transparent = true;
-    grid.material.opacity = 0.22;
-    grid.position.y = 0.0008;
-    this.scene.add(grid);
-
-    // 그림자 받이
-    const sp = new THREE.Mesh(
-      new THREE.PlaneGeometry(4, 4),
-      new THREE.ShadowMaterial({ opacity: 0.45 })
-    );
-    sp.rotation.x = -Math.PI / 2;
-    sp.position.y = 0.0005;
-    sp.receiveShadow = true;
-    this.scene.add(sp);
-  }
-
-  _materials() {
-    const bump = makeSkinBump();
-    bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
-    bump.repeat.set(5, 5);
-
-    const skin = new THREE.MeshPhysicalMaterial({
-      color: COLORS.skin,
-      roughness: 0.55,
-      metalness: 0.0,
-      sheen: 0.35,
-      sheenColor: new THREE.Color(0xffa184),
-      sheenRoughness: 0.8,
-      clearcoat: 0.10,
-      clearcoatRoughness: 0.62,
-      envMapIntensity: 0.55,
-      bumpMap: bump,
-      bumpScale: 0.0014,
-    });
-
-    const head = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      roughness: 0.55,
-      metalness: 0.0,
-      sheen: 0.3,
-      sheenColor: new THREE.Color(0xffa184),
-      sheenRoughness: 0.8,
-      clearcoat: 0.10,
-      clearcoatRoughness: 0.62,
-      envMapIntensity: 0.55,
-    });
-
-    const shorts = new THREE.MeshPhysicalMaterial({
-      color: COLORS.shorts,
-      roughness: 0.86,
-      metalness: 0.02,
-      sheen: 0.5,
-      sheenColor: new THREE.Color(0x2a3d55),
-      sheenRoughness: 0.95,
-      envMapIntensity: 0.4,
-    });
-
-    const hair = new THREE.MeshPhysicalMaterial({
-      color: COLORS.hair,
-      roughness: 0.52,
-      metalness: 0.0,
-      sheen: 0.35,
-      sheenColor: new THREE.Color(0x35302e),
-      sheenRoughness: 0.6,
-      clearcoat: 0.12,
-      clearcoatRoughness: 0.5,
-      envMapIntensity: 0.45,
-    });
-
-    this.matSkin = skin;
-    this.headMat = head;
-    this.mats = [skin, head, shorts, hair];
-  }
-
-  _loadFace() {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const tex = makeHeadTexture(img);
-        this.headMat.map = tex;
-        this.headMat.color.set(0xffffff);
-        this.headMat.needsUpdate = true;
-        this.faceReady = true;
-      } catch (e) {
-        console.warn('face texture', e);
-      }
-    };
-    img.onerror = () => { this.faceReady = true; };
-    img.src = 'assets/face-tex.png';
-  }
-
-  _observeResize() {
-    const resize = () => {
-      const el = this.canvas.parentElement;
-      const w = el.clientWidth, h = el.clientHeight;
-      if (!w || !h) return;
-      this.renderer.setSize(w, h, false);
-      this.camera.aspect = w / h;
-      this.camera.fov = w / h < 0.9 ? 42 : 34;
-      this.camera.updateProjectionMatrix();
-    };
-    this._resize = resize;
-    resize();
-    if (window.ResizeObserver) new ResizeObserver(resize).observe(this.canvas.parentElement);
-    window.addEventListener('orientationchange', () => setTimeout(resize, 250));
-  }
-
-  setParams(target) { this.targetParams = target; }
-
-  _poseTargets() {
-    const t = this.time;
-    const p = {
-      hipsX: 0, hipsY: 0, spineX: 0, spineY: 0, chestX: 0, chestY: 0,
-      neckX: 0, neckY: 0, headX: 0, headY: 0,
-      armLX: 0, armRX: 0, armLZ: 0, armRZ: 0, elbLX: -0.16, elbRX: -0.16,
-      handLX: 0, handRX: 0,
-      thighLX: 0, thighRX: 0, thighLZ: 0, thighRZ: 0,
-      kneeLX: 0.05, kneeRX: 0.05, footLX: 0, footRX: 0, breath: 0,
-    };
-    if (state.anim === 'idle') {
-      const b = Math.sin(t * 1.45);
-      p.breath = b * 0.55;
-      p.chestX = -0.012 + b * 0.012;
-      p.spineX = b * 0.006;
-      p.armLX = Math.sin(t * 0.62) * 0.05;
-      p.armRX = Math.sin(t * 0.62 + 1.7) * 0.05;
-      p.armLZ = 0.02 + b * 0.006;
-      p.armRZ = 0.02 + b * 0.006;
-      p.elbLX = -0.20 - b * 0.02;
-      p.elbRX = -0.20 - b * 0.02;
-      p.headY = Math.sin(t * 0.40) * 0.07;
-      p.headX = Math.sin(t * 0.31) * 0.02;
-      p.spineY = Math.sin(t * 0.24) * 0.02;
-    } else if (state.anim === 'walk') {
-      const ph = t * 3.4;
-      const s = Math.sin(ph), c = Math.cos(ph);
-      p.thighLX = s * 0.42;
-      p.thighRX = -s * 0.42;
-      p.kneeLX = 0.08 + Math.max(0, -Math.sin(ph - 0.6)) * 0.85;
-      p.kneeRX = 0.08 + Math.max(0, -Math.sin(ph + PI - 0.6)) * 0.85;
-      p.footLX = -s * 0.18;
-      p.footRX = s * 0.18;
-      p.armLX = -s * 0.34;
-      p.armRX = s * 0.34;
-      p.armLZ = 0.03; p.armRZ = 0.03;
-      p.elbLX = -0.24 - Math.max(0, s) * 0.36;
-      p.elbRX = -0.24 - Math.max(0, -s) * 0.36;
-      p.hipsY = s * 0.05;
-      p.spineY = -s * 0.05;
-      p.headY = s * 0.03;
-      p.breath = Math.sin(t * 1.2) * 0.3;
-    } else if (state.anim === 'pose') {
-      const b = Math.sin(t * 1.1);
-      p.armLZ = 0.92 + b * 0.03;
-      p.armRZ = 0.92 + b * 0.03;
-      p.armLX = -0.22; p.armRX = -0.22;
-      p.elbLX = -0.62; p.elbRX = -0.62;
-      p.thighLZ = 0.04; p.thighRZ = 0.04;
-      p.spineX = -0.03 + b * 0.006;
-      p.headX = -0.07;
-      p.breath = b * 0.6;
-    }
-    return p;
-  }
-
-  _loop() {
-    const render = () => {
-      requestAnimationFrame(render);
-      const dt = Math.min(0.05, this.clock.getDelta());
-      this.time += dt;
-
-      // 체형 모프
-      if (this.targetParams) {
-        const k = 1 - Math.pow(0.0007, dt);
-        let changed = false;
-        for (const key in this.targetParams) {
-          const cur = this.cur[key];
-          const tgt = this.targetParams[key];
-          if (Math.abs(tgt - cur) > 1e-5) {
-            this.cur[key] = lerp(cur, tgt, k);
-            changed = true;
-          }
-        }
-        if (changed) this._shapeDirty = true;
-      }
-      const now = performance.now();
-      if (this._shapeDirty && now - this._lastBuild > 40) {
-        this.anatomy.update(this.cur);
-        this._shapeDirty = false;
-        this._lastBuild = now;
-        this._needPose = true;
-      }
-
-      // 포즈
-      const target = this._poseTargets();
-      const kp = 1 - Math.pow(0.0015, dt);
-      let poseChanged = false;
-      for (const key in target) {
-        const d = target[key] - this.pose[key];
-        if (Math.abs(d) > 1e-5) { this.pose[key] = lerp(this.pose[key], target[key], kp); poseChanged = true; }
-      }
-      if (poseChanged || this._needPose) {
-        this.anatomy.setPose(this.pose);
-        this._needPose = false;
-      }
-
-      this.controls.update();
-      this.renderer.render(this.scene, this.camera);
-    };
-    render();
-  }
-}
-
 /* ---- compare slider (드래그 방향 = 드러나는 체형) ---- */
 function initCompare() {
   const wrap = $('#compare');
@@ -760,15 +393,13 @@ function initCompare() {
 /* =========================================================
    4. 앱 초기화 & 상호작용
    ========================================================= */
-let character = null;
-
 function setSliderUI() {
   $('#date-slider').value = String(state.index);
 }
 
 function applyIndex(i, { fromSlider = false } = {}) {
   state.index = clamp(i, 0, state.records.length - 1);
-  if (character) character.setParams(paramsAt(state.index));
+  applyFigure(state.index);
   renderStats();
   if (!fromSlider) setSliderUI();
 }
@@ -782,10 +413,11 @@ function play() {
   const n = state.records.length;
   if (n < 2) return;
 
-  // 0부터 시작해서 마지막까지
+  // 0부터 시작해서 마지막까지 (모습이 바뀌지 않는 구간은 짧게)
   const seq = [];
   for (let i = 0; i < n - 1; i++) {
-    seq.push({ from: i, to: i + 1, dur: 2200, hold: 900 });
+    const moving = Math.abs(figureProgress(i + 1) - figureProgress(i)) > 0.01;
+    seq.push({ from: i, to: i + 1, dur: moving ? 2600 : 700, hold: moving ? 1000 : 350 });
   }
   let p = 0, t0 = performance.now();
 
@@ -798,13 +430,13 @@ function play() {
     if (elc < seg.dur) {
       const f = easeInOut(elc / seg.dur);
       state.index = seg.from + (seg.to - seg.from) * f;
-      if (character) character.setParams(paramsAt(state.index));
+      applyFigure(state.index);
       renderStats();
       setSliderUI();
       requestAnimationFrame(step);
     } else if (el < seg.dur + seg.hold) {
       state.index = seg.to;
-      if (character) character.setParams(paramsAt(state.index));
+      applyFigure(state.index);
       renderStats();
       setSliderUI();
       requestAnimationFrame(step);
@@ -834,9 +466,6 @@ function switchMode(mode) {
   state.mode = mode;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === mode));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === `view-${mode}`));
-  if (mode === 'model' && character) {
-    requestAnimationFrame(() => character._resize && character._resize());
-  }
 }
 
 function toast(msg) {
@@ -931,7 +560,7 @@ async function initData(focusId) {
   state.index = idx;
   setSliderUI();
   renderStats();
-  if (character) character.setParams(paramsAt(state.index));
+  applyFigure(state.index);
 }
 
 async function init() {
@@ -943,12 +572,6 @@ async function init() {
   document.querySelectorAll('.tab').forEach(t =>
     t.addEventListener('click', () => switchMode(t.dataset.tab)));
 
-  document.querySelectorAll('[data-anim]').forEach(btn =>
-    btn.addEventListener('click', () => {
-      state.anim = btn.dataset.anim;
-      document.querySelectorAll('[data-anim]').forEach(b => b.classList.toggle('active', b === btn));
-    }));
-
   $('#date-slider').addEventListener('input', e => {
     const v = Number(e.target.value);
     stopPlay();
@@ -956,17 +579,18 @@ async function init() {
   });
   $('#play').addEventListener('click', play);
 
-  // 3D 시작
-  try {
-    character = new Character3D(document.getElementById('three-canvas'));
-    state.ready = true;
-    $('#loader').classList.add('hidden');
-    character.setParams(paramsAt(state.index));
-  } catch (err) {
-    console.error('3D init failed', err);
-    (window.__errors = window.__errors || []).push('3D init: ' + (err && err.stack ? err.stack : String(err)));
-    $('#loader').textContent = '3D 모델을 표시할 수 없습니다 (WebGL 미지원)';
-  }
+  // 체형 이미지 준비되면 로더 숨김
+  const figs = [...document.querySelectorAll('.figure-img')];
+  Promise.all(figs.map(img => (img.complete && img.naturalWidth
+    ? Promise.resolve()
+    : new Promise(res => { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); }))))
+    .then(() => {
+      $('#loader').classList.add('hidden');
+      figs.forEach(img => img.decode && img.decode().catch(() => {}));
+    });
+
+  // 첫 화면
+  applyFigure(state.index);
 
   // PWA
   if ('serviceWorker' in navigator) {

@@ -1,13 +1,7 @@
-const CACHE = 'inbody3d-v4';
-const CDN = [
-  'https://unpkg.com/three@0.160.0/build/three.module.js',
-  'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js',
-  'https://unpkg.com/three@0.160.0/examples/jsm/environments/RoomEnvironment.js',
-];
+const CACHE = 'inbody3d-v5';
 const IMG = [
   './assets/body-current.png',
   './assets/body-goal.png',
-  './assets/face-tex.png',
   './assets/icon-192.png',
   './assets/icon-512.png',
 ];
@@ -16,7 +10,6 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
       .then(c => c.addAll(IMG))
-      .then(() => caches.open(CACHE).then(c => Promise.all(CDN.map(u => c.add(u).catch(() => null)))))
       .then(() => self.skipWaiting())
   );
 });
@@ -32,16 +25,6 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-
-  // three.js CDN 모듈은 캐시 우선 (오프라인에서도 3D 동작)
-  if (url.hostname === 'unpkg.com') {
-    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(req, copy));
-      return res;
-    })));
-    return;
-  }
 
   if (url.origin !== location.origin) return;
 

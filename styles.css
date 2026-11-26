@@ -70,7 +70,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 .view.active { display: block; }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* ---------- 3D stage ---------- */
+/* ---------- 뷰어 stage (체형 이미지 변신) ---------- */
 #view-model.active { display: grid; gap: 12px; }
 
 .stage {
@@ -85,6 +85,38 @@ body { padding-bottom: env(safe-area-inset-bottom); }
 }
 #three-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
 
+/* 체형 이미지: 같은 프레임의 두 이미지를 겹쳐 두고 opacity로 변신 */
+.figure { position: absolute; inset: 0; overflow: hidden; }
+.figure-ambient {
+  position: absolute; inset: -10%;
+  width: 120%; height: 120%;
+  object-fit: cover; object-position: center 30%;
+  filter: blur(26px) saturate(1.05) brightness(0.5);
+  transform: scale(1.04);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.figure::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(78% 72% at 50% 42%, rgba(7,10,14,0) 42%, rgba(7,10,14,0.6) 100%);
+  pointer-events: none;
+}
+.figure-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain; object-position: center bottom;
+  transform-origin: 50% 94%;
+  animation: breathe 6.4s ease-in-out infinite;
+  will-change: opacity, transform;
+  user-select: none; -webkit-user-drag: none;
+}
+.figure-img.after { opacity: 0; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.006) translateY(-0.25%); }
+}
+@media (prefers-reduced-motion: reduce) { .figure-img { animation: none; } }
+
 .stage-overlay { position: absolute; inset: 12px 12px auto 12px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
 .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .pill {
@@ -94,7 +126,7 @@ body { padding-bottom: env(safe-area-inset-bottom); }
   border: 1px solid rgba(46,230,168,0.28);
 }
 .pill.ghost { background: rgba(255,255,255,0.05); color: #b9c6d6; border-color: var(--line); }
-.hint { font-size: 10.5px; color: rgba(160,175,195,0.55); }
+.hint { font-size: 10.5px; color: rgba(255,255,255,0.78); text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
 
 .loader {
   position: absolute; inset: 0; display: grid; place-items: center; gap: 10px;
@@ -173,21 +205,6 @@ input[type="range"]::-moz-range-thumb {
 .timeline-labels span.on { color: var(--mint); }
 
 /* ---------- buttons ---------- */
-.controls { display: flex; gap: 7px; margin: 14px 0 10px; }
-.chip {
-  flex: 1;
-  border: 1px solid var(--line);
-  background: rgba(255,255,255,0.035);
-  color: #c3cfdd; font: inherit; font-size: 12.5px; font-weight: 600;
-  padding: 10px 6px; border-radius: 12px; cursor: pointer;
-  transition: background .16s, color .16s, border-color .16s;
-}
-.chip.active {
-  background: rgba(46,230,168,0.14);
-  border-color: rgba(46,230,168,0.4);
-  color: var(--mint);
-  box-shadow: 0 0 0 1px rgba(46,230,168,0.12) inset;
-}
 .primary {
   display: block; width: 100%;
   border: 0; border-radius: 14px;
