@@ -493,7 +493,7 @@ class Character3D {
 
     // 포즈 상태
     this.pose = {
-      shLx: 0, shLz: 0.10, shRx: 0, shRz: -0.10,
+      shLx: 0, shLz: -0.10, shRx: 0, shRz: 0.10,
       elLx: 0.12, elRx: 0.12,
       hipLx: 0, hipRx: 0, kneeLx: 0.04, kneeRx: 0.04,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0,
@@ -796,7 +796,7 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: 0.185, shRx: 0, shRz: -0.185, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: -0.185, shRx: 0, shRz: 0.185, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
