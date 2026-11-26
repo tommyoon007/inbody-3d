@@ -752,15 +752,15 @@ class Character3D {
     // 머리
     const R = p.headW;
     this.headShape.scale.set(R, R * 1.20, R * 1.04);
-    this.headShape.position.y = 0.10;
-    this.head.position.y = torsoH + 0.055;
+    this.headShape.position.y = 0.098;
+    this.head.position.y = torsoH + 0.028;
 
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
       a.shoulder.position.x = a.sgn * (p.shoulder * 1.10);
       a.shoulder.position.y = torsoH * 0.89;
-      a.shoulderCap.scale.set(p.armR * 1.20, p.armR * 1.30, p.armR * 1.15);
+      a.shoulderCap.scale.set(p.armR * 1.08, p.armR * 1.18, p.armR * 1.05);
       a.shoulderCap.position.set(a.sgn * p.armR * 0.15, -p.armR * 0.15, 0);
       setLimb(a.upper, p.armR, 0.31);
       a.elbow.position.y = -0.305;
@@ -783,7 +783,7 @@ class Character3D {
       L.shortLeg.scale.set(p.thighR * 1.12, 0.095, p.thighR * 1.12);
       L.shortLeg.position.y = -0.125;
       L.knee.position.y = -0.38;
-      L.kneeBall.scale.set(p.calfR * 0.98, p.calfR * 0.95, p.calfR * 0.98);
+      L.kneeBall.scale.set(p.calfR * 0.92, p.calfR * 0.88, p.calfR * 0.94);
       setLimb(L.shin, p.calfR * 0.95, 0.38);
       L.foot.scale.set(0.095, 0.068, 0.24);
       L.foot.position.set(0, -0.40, 0.055);
