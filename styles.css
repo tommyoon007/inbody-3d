@@ -207,6 +207,54 @@ input[type="range"]::-moz-range-thumb {
 }
 .icon-btn { border: 0; background: transparent; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px 8px; }
 
+/* ---------- 맞춤 운동 팁 ---------- */
+.tips-card {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.tips-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.tips-head h2 { margin: 0; font-size: 13.5px; letter-spacing: -0.3px; }
+.tips-list { display: grid; gap: 8px; }
+
+.tip {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 10px 11px;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid var(--mint);
+}
+.tip.p2 { border-left-color: #6aa9ff; }
+.tip.p3 { border-left-color: #ffc46b; }
+.tip.p0 { border-left-color: rgba(155,170,190,0.5); }
+.tip-top { display: flex; align-items: center; gap: 7px; }
+.tip-rank {
+  font-size: 9.5px; font-weight: 800; letter-spacing: .2px;
+  padding: 2px 6px; border-radius: 6px;
+  background: rgba(46,230,168,0.16); color: var(--mint);
+}
+.tip.p2 .tip-rank { background: rgba(106,169,255,0.16); color: var(--blue); }
+.tip.p3 .tip-rank { background: rgba(255,196,107,0.16); color: #ffc46b; }
+.tip.p0 .tip-rank { background: rgba(155,170,190,0.14); color: #b9c6d6; }
+.tip-title { font-size: 12.5px; font-weight: 700; }
+.tip-why { font-size: 10.5px; color: var(--muted); margin: 5px 0 0; line-height: 1.5; }
+.tip-why b { color: #cdd8e5; font-weight: 700; }
+.tip ul { margin: 6px 0 0; padding-left: 15px; }
+.tip li { font-size: 11.5px; line-height: 1.62; color: #c8d3e0; margin-bottom: 2px; }
+.tip li::marker { color: rgba(46,230,168,0.65); }
+
+.week { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap; }
+.week span {
+  flex: 1 1 68px; min-width: 68px;
+  font-size: 10px; text-align: center; line-height: 1.35;
+  padding: 6px 4px; border-radius: 9px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--line); color: #b7c4d3;
+}
+.week span b { display: block; font-size: 9.5px; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
+.week span.rest { color: rgba(150,165,185,0.6); }
+.week span.cardio { border-color: rgba(255,196,107,0.3); }
+.week span.strength { border-color: rgba(46,230,168,0.3); }
+
 /* ---------- gallery ---------- */
 #view-gallery.active { display: grid; gap: 12px; }
 .card {

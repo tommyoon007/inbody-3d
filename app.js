@@ -163,6 +163,133 @@ function renderStats() {
     const on = Math.round(state.index) === i ? 'on' : '';
     return `<span class="${on}">${shortDate(rec)}</span>`;
   }).join('');
+
+  renderTips(r);
+}
+
+/* ---------- 맞춤 운동 팁 ---------- */
+const TIPS = {
+  abs: {
+    title: '복부 · 내장지방 집중',
+    score: r =>
+      3 * clamp((visceralOf(r) - 8) / 4, 0, 1) +
+      2 * clamp((waistOf(r) - 0.90) / 0.12, 0, 1) +
+      1 * clamp((r.bodyFatPct - 20) / 12, 0, 1),
+    why: r =>
+      `복부지방률 <b>${fmt(waistOf(r), 2)}</b> · 내장지방 <b>${fmt(visceralOf(r), 0)}레벨</b> · 체지방률 <b>${fmt(r.bodyFatPct)}%</b><br>` +
+      '내장지방은 배 안쪽 장기 사이에 쌓여 혈압·혈당 문제로 가장 먼저 이어지는 지방입니다.',
+    tips: [
+      '주 3~4회 중강도 유산소 30~45분 — 빠르게 걷기(시속 6km), 인클라인 트레드밀(경사 8~12%), 실내자전거',
+      '식후 10~15분 가벼운 산책 — 식후 혈당·중성지방 상승을 눌러 줍니다',
+      '강도는 “숨이 차지만 대화는 가능한” 수준(RPE 5~6), 주 150~250분 누적이 목표',
+      '복부만 골라 빠지지는 않으므로 유산소 + 식사량 조절을 함께 (야식·음주 줄이기)',
+    ],
+  },
+  lower: {
+    title: '하체 대근육 (기초대사량 끌어올리기)',
+    score: r =>
+      2.5 * clamp((42 - musclePct(r)) / 4, 0, 1) +
+      1.0 * clamp((r.bodyFatPct - 20) / 15, 0, 1) +
+      0.8 * clamp((bmiOf(r) - 24) / 5, 0, 1),
+    why: r =>
+      `골격근량 <b>${fmt(r.skeletalMuscle)}kg</b> · 골격근/체중 <b>${fmt(musclePct(r))}%</b>(표준 42~45%)` +
+      (r.bmr ? ` · 기초대사량 <b>${fmt(r.bmr, 0)}kcal</b>` : '') +
+      '<br>허벅지·엉덩이 같은 큰 근육을 쓰면 기초대사량이 올라 가만히 있어도 지방 연소가 빨라집니다.',
+    tips: [
+      '주 2회 하체 근력 — 스쿼트 3세트×10~12회, 레그프레스 3×12, 런지 2×10(양쪽)',
+      '세트 사이 60~90초 휴식, “마지막 2회가 힘든” 무게로 자세 우선',
+      '근육 손실 방지용 단백질 — 체중 1kg당 1.2~1.6g (하루 약 105~140g)',
+      '계단·언덕 걷기를 일상에 섞으면 하체 자극과 유산소를 동시에',
+    ],
+  },
+  upper: {
+    title: '상체 라인 & 코어',
+    score: r =>
+      2.2 * clamp((45 - musclePct(r)) / 6, 0, 1) +
+      0.5 * clamp((bmiOf(r) - 24) / 6, 0, 1),
+    why: r =>
+      `골격근/체중 <b>${fmt(musclePct(r))}%</b> · 인바디점수 <b>${scoreOf(r)}점</b><br>` +
+      '등·어깨를 키우면 허리가 상대적으로 좁아져 역삼각형 라인이 살고, 코어가 받쳐 주면 자세와 허리 부담이 줄어듭니다.',
+    tips: [
+      '랫풀다운 3×10, 시티드 로우 3×12 — 등 근육으로 어깨 라인 만들기',
+      '플랭크 30~45초×3, 데드버그 10회×3 — 허리 부담 없이 복부 코어 강화',
+      '푸시업·숄더프레스로 가슴·어깨 균형 맞추기 (주 2회)',
+      '어깨를 뒤로 모으는 자세를 의식하면 등 근육이 제대로 쓰입니다',
+    ],
+  },
+};
+
+function musclePct(r) {
+  return (r.skeletalMuscle / r.weight) * 100;
+}
+
+function renderTips(r) {
+  const ranked = Object.entries(TIPS)
+    .map(([id, lib]) => ({ id, lib, s: lib.score(r) }))
+    .sort((a, b) => b.s - a.s);
+
+  $('#tips-for').textContent = r.goal ? '목표 체형 기준' : `${dateText(r)} 기준`;
+
+  const maintain = r.goal || ranked[0].s < 1.6;
+
+  if (maintain) {
+    const why = r.goal
+      ? `목표 수치(체지방 <b>${fmt(r.bodyFatPct)}%</b> · 골격근 <b>${fmt(r.skeletalMuscle)}kg</b> · 점수 <b>${scoreOf(r)}점</b>)에 도달한 상태입니다.<br>이제는 줄이는 국면이 아니라 <b>지키고 다듬는</b> 국면 — 근육을 유지해야 요요 없이 체형이 남습니다.`
+      : `체지방률 <b>${fmt(r.bodyFatPct)}%</b> · 골격근 <b>${fmt(r.skeletalMuscle)}kg</b> — 큰 보완 부위는 없습니다.<br>지금 균형을 유지하면서 근육을 조금씩 더하는 것이 다음 단계입니다.`;
+    $('#tips-list').innerHTML = `
+      <div class="tip p0">
+        <div class="tip-top"><span class="tip-rank">${r.goal ? 'GOAL' : '유지'}</span><span class="tip-title">유지 · 강화 모드</span></div>
+        <p class="tip-why">${why}</p>
+        <ul>
+          <li>전신 근력 주 3회(각 40분)로 지금 근육량 유지 — 하체·등 위주</li>
+          <li>유산소는 주 2회 20~30분이면 충분, 근력 운동과 같은 날은 뒤에 배치</li>
+          <li>단백질은 체중 1kg당 1.2~1.6g 유지, 수분 하루 2L</li>
+          <li>월 1회 인바디 재측정으로 체지방률 ±1% 안에서 관리</li>
+        </ul>
+      </div>`;
+    $('#week-plan').innerHTML = buildWeek([], true)
+      .map(w => `<span class="${w.k}"><b>${w.d}</b>${w.t}</span>`).join('');
+    return;
+  }
+
+  const top = ranked.slice(0, 3);
+  $('#tips-list').innerHTML = top.map((t, i) => `
+    <div class="tip p${i + 1}">
+      <div class="tip-top"><span class="tip-rank">${i + 1}순위</span><span class="tip-title">${t.lib.title}</span></div>
+      <p class="tip-why">${t.lib.why(r)}</p>
+      <ul>${t.lib.tips.map(x => `<li>${x}</li>`).join('')}</ul>
+    </div>`).join('');
+
+  $('#week-plan').innerHTML = buildWeek(top.map(t => t.id), false)
+    .map(w => `<span class="${w.k}"><b>${w.d}</b>${w.t}</span>`).join('');
+}
+
+function buildWeek(areas, maintain) {
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  const has = id => areas.includes(id);
+  let plan;
+  if (maintain) {
+    plan = [
+      { t: '전신 근력 A', k: 'strength' },
+      { t: '유산소 25분', k: 'cardio' },
+      { t: '전신 근력 B', k: 'strength' },
+      { t: '가벼운 걷기', k: '' },
+      { t: '유산소 인터벌', k: 'cardio' },
+      { t: '근력·코어', k: 'strength' },
+      { t: '휴식', k: 'rest' },
+    ];
+  } else {
+    plan = [
+      has('lower') ? { t: '하체 근력', k: 'strength' } : { t: '전신 근력', k: 'strength' },
+      has('abs') ? { t: '유산소 40분', k: 'cardio' } : { t: '걷기 40분', k: '' },
+      has('upper') ? { t: '상체·코어', k: 'strength' } : { t: '코어 서킷', k: 'strength' },
+      has('abs') ? { t: '유산소 30분', k: 'cardio' } : { t: '가벼운 걷기', k: '' },
+      has('lower') ? { t: '하체·코어', k: 'strength' } : { t: '전신 근력', k: 'strength' },
+      { t: '걷기 60분', k: 'cardio' },
+      { t: '휴식', k: 'rest' },
+    ];
+  }
+  return days.map((d, i) => ({ d, ...plan[i] }));
 }
 
 function renderTable() {
