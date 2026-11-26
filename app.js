@@ -461,10 +461,10 @@ class Character3D {
     this.scene.fog = new THREE.Fog(0x0a0e13, 3.4, 8);
 
     this.camera = new THREE.PerspectiveCamera(34, 1, 0.1, 40);
-    this.camera.position.set(0.5, 1.3, 3.3);
+    this.camera.position.set(0.45, 1.22, 2.95);
 
     this.controls = new OrbitControls(this.camera, canvas);
-    this.controls.target.set(0, 0.9, 0);
+    this.controls.target.set(0, 0.92, 0);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.075;
     this.controls.enablePan = false;
@@ -879,7 +879,7 @@ class Character3D {
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
       // 모바일 세로 화면에서 인체가 잘리지 않도록 카메라 조정
-      this.camera.fov = w / h < 0.85 ? 42 : 34;
+      this.camera.fov = w / h < 0.85 ? 40 : 34;
       this.camera.updateProjectionMatrix();
     };
     this._resize = resize;
