@@ -43,13 +43,14 @@ GitHub Pages: https://tommyoon007.github.io/inbody-3d/
 
 ## 이미지 변신 규칙
 
-- 타임라인의 마지막 실측 기록까지는 `assets/body-current.png`, 마지막 실측 → 목표 구간에서 `assets/body-goal.png`가 슬라이더 값에 따라 opacity로 겹쳐집니다 (`app.js`의 `figureProgress()`).
+- 타임라인의 마지막 실측 기록까지는 `assets/body-current.webp`, 마지막 실측 → 목표 구간에서 `assets/body-goal.webp`가 슬라이더 값에 따라 opacity로 겹쳐집니다 (`app.js`의 `figureProgress()`).
 - 두 이미지는 같은 프레임(900×1350)으로 만들어져 있어 인물 위치가 일치하고, 그래서 크로스페이드가 자연스러운 변신처럼 보입니다.
-- 새 체형 이미지를 만들면 같은 크기·구도로 저장해 `assets/`에 넣고, `index.html`의 `src`를 바꾸면 됩니다.
+- 새 체형 이미지를 만들면 같은 크기(900×1350)·구도로 `assets/body-current.webp`(또는 `body-goal.webp`)를 교체하면 됩니다. 원본 PNG를 WebP로 바꾸려면 `python3 -c "from PIL import Image; Image.open('assets/body-current.png').save('assets/body-current.webp','WEBP',quality=92,method=6)"`.
+- 원본 `assets/body-current.png`·`body-goal.png`는 보관용(사이트는 WebP 사용, 두 파일 합계 약 2.6MB → WebP 약 130KB).
 
 ## 파일
 
-- `assets/body-current.png` — 현재 체형(87.7kg · 29.9%) 이미지
-- `assets/body-goal.png` — 목표 체형(75.0kg · 17.5%) 이미지
+- `assets/body-current.webp` — 현재 체형(87.7kg · 29.9%) 이미지 (원본 `body-current.png`)
+- `assets/body-goal.webp` — 목표 체형(75.0kg · 17.5%) 이미지 (원본 `body-goal.png`)
 - `index.html`, `app.js`, `styles.css` — 화면·변신 로직·스타일 (외부 라이브러리 없음)
 - `sw.js`, `manifest.json` — 오프라인 PWA

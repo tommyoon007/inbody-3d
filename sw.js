@@ -1,7 +1,7 @@
-const CACHE = 'inbody3d-v5';
+const CACHE = 'inbody3d-v6';
 const IMG = [
-  './assets/body-current.png',
-  './assets/body-goal.png',
+  './assets/body-current.webp',
+  './assets/body-goal.webp',
   './assets/icon-192.png',
   './assets/icon-512.png',
 ];

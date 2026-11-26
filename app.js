@@ -308,7 +308,7 @@ function renderGallery() {
   $('#card-count').textContent = `${rs.length}개`;
   $('#gallery').innerHTML = rs.map((r, i) => {
     const isGoal = !!r.goal;
-    const src = isGoal ? 'assets/body-goal.png' : 'assets/body-current.png';
+    const src = isGoal ? 'assets/body-goal.webp' : 'assets/body-current.webp';
     let caption = '';
     if (!isGoal && i === 0 && rs.length > 2) caption = '10/26 체형 이미지로 표현';
     if (!isGoal && i > 0) caption = '실제 측정 기반 체형 이미지';
