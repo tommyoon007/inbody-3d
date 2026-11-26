@@ -803,8 +803,8 @@ class Character3D {
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = 0.185 + b * 0.010;
-      p.shRz = -0.185 - b * 0.010;
+      p.shLz = -0.185 - b * 0.010;
+      p.shRz = 0.185 + b * 0.010;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
@@ -822,7 +822,7 @@ class Character3D {
       p.kneeRx = 0.10 + Math.max(0, -Math.sin(ph + Math.PI - 0.5)) * 0.85;
       p.shLx = -s * 0.42;
       p.shRx = s * 0.42;
-      p.shLz = 0.14; p.shRz = -0.14;
+      p.shLz = -0.14; p.shRz = 0.14;
       p.elLx = 0.22 + Math.max(0, s) * 0.3;
       p.elRx = 0.22 + Math.max(0, -s) * 0.3;
       p.bodyY = Math.abs(c) * 0.012 - 0.006;
@@ -831,8 +831,8 @@ class Character3D {
       p.breath = Math.sin(t * 1.4) * 0.3;
     } else if (state.anim === 'pose') {
       const b = Math.sin(t * 1.2);
-      p.shLz = 2.42 + b * 0.05;
-      p.shRz = -2.42 - b * 0.05;
+      p.shLz = -2.42 - b * 0.05;
+      p.shRz = 2.42 + b * 0.05;
       p.shLx = 0.12; p.shRx = 0.12;
       p.elLx = 0.55; p.elRx = 0.55;
       p.hipLx = -0.06; p.hipRx = 0.06;
