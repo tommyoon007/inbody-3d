@@ -73,22 +73,22 @@ function morphTargets(r) {
   const wN = clamp((waistOf(r) - 0.84) / (1.04 - 0.84), 0, 1.3);
   const vN = clamp((visceralOf(r) - 6) / (13 - 6), 0, 1.3);
 
-  const waistW = 0.142 + 0.046 * wN + 0.014 * fat;
-  const waistD = 0.093 + 0.014 * wN;
+  const waistW = 0.133 + 0.040 * wN + 0.010 * fat;
+  const waistD = 0.090 + 0.013 * wN;
   return {
-    shoulder: 0.178 + 0.036 * mus + 0.010 * fat,
-    chestD: 0.108 + 0.020 * mus + 0.032 * fat,
+    shoulder: 0.203 + 0.034 * mus + 0.005 * fat,
+    chestD: 0.103 + 0.022 * mus + 0.030 * fat,
     waistW,
     waistD,
-    bellyD: waistD + 0.010 + 0.038 * fat + 0.010 * vN,
-    belly: 0.006 + 0.030 * fat + 0.012 * vN,
-    hipW: 0.148 + 0.030 * fat + 0.004 * mus,
-    hipD: 0.100 + 0.018 * fat,
-    thighR: 0.067 + 0.019 * fat - 0.002 * mus,
-    armR: 0.036 + 0.009 * fat + 0.013 * mus,
-    calfR: 0.048 + 0.009 * fat + 0.006 * mus,
-    neckR: 0.046 + 0.008 * fat,
-    headW: 0.098 + 0.013 * fat,
+    bellyD: waistD + 0.010 + 0.034 * fat + 0.009 * vN,
+    belly: 0.006 + 0.028 * fat + 0.011 * vN,
+    hipW: 0.142 + 0.028 * fat + 0.005 * mus,
+    hipD: 0.096 + 0.016 * fat,
+    thighR: 0.066 + 0.018 * fat - 0.002 * mus,
+    armR: 0.038 + 0.009 * fat + 0.014 * mus,
+    calfR: 0.047 + 0.009 * fat + 0.006 * mus,
+    neckR: 0.044 + 0.008 * fat,
+    headW: 0.083 + 0.009 * fat,
     faceFull: fat,
   };
 }
@@ -474,6 +474,13 @@ class Character3D {
     this.controls.zoomSpeed = 0.8;
     this.controls.update();
 
+    const _q = new URLSearchParams(location.search);
+    if (_q.get('view') === 'head') {
+      this.camera.position.set(0, 1.5, 0.75);
+      this.controls.target.set(0, 1.5, 0);
+      this.controls.update();
+    }
+
     this._lights();
     this._floor();
     this._materials();
@@ -585,6 +592,15 @@ class Character3D {
     this.torso.castShadow = true;
     this.torso.receiveShadow = true;
     hips.add(this.torso);
+
+    /* --- 가슴(가슴근육 볼륨) --- */
+    this.pecs = [];
+    for (const sgn of [-1, 1]) {
+      const pec = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), this.mat.skin);
+      pec.castShadow = true;
+      hips.add(pec);
+      this.pecs.push({ mesh: pec, sgn });
+    }
 
     /* --- 목 --- */
     this.neck = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1, 20), this.mat.skin);
@@ -729,21 +745,28 @@ class Character3D {
 
     updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
 
+    // 가슴 볼륨: 근육량이 높을수록 크고 또렷, 지방이 많으면 부드럽게 퍼짐
+    const pecW = 0.048 + 0.022 * ((p.armR - 0.036) / 0.03) + 0.012 * ((p.chestD - 0.10) / 0.05);
+    for (const { mesh, sgn } of this.pecs) {
+      mesh.scale.set(pecW, pecW * 0.78, pecW * 0.5);
+      mesh.position.set(sgn * pecW * 0.92, torsoH * 0.795, p.chestD * 0.78);
+    }
+
     // 목
     this.neck.scale.set(p.neckR, 0.10, p.neckR * 1.02);
     this.neck.position.y = torsoH + 0.005;
 
     // 머리
     const R = p.headW;
-    this.headShape.scale.set(R, R * 1.16, R * 1.04);
-    this.headShape.position.y = 0.09;
-    this.head.position.y = torsoH + 0.10;
+    this.headShape.scale.set(R, R * 1.24, R * 1.05);
+    this.headShape.position.y = 0.105;
+    this.head.position.y = torsoH + 0.085;
 
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.86);
-      a.shoulder.position.y = torsoH - 0.055;
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.93);
+      a.shoulder.position.y = torsoH - 0.045;
       setLimb(a.upper, p.armR, 0.30);
       a.elbow.position.y = -0.295;
       setLimb(a.fore, p.armR * 0.86, 0.27);
@@ -753,17 +776,17 @@ class Character3D {
 
     // 반바지
     updateTube(this.shortsGeo, t => {
-      const w = lerp(1.0, 1.07, t);
+      const w = lerp(1.06, 1.10, t);
       return { rx: p.hipW * w, rz: p.hipD * w, z: 0 };
-    }, -0.20, 0.24);
+    }, -0.235, 0.30);
 
     // 다리
     for (const side of ['L', 'R']) {
       const L = this.legs[side];
       L.hip.position.x = L.sgn * p.hipW * 0.52;
       setLimb(L.thigh, p.thighR, 0.41);
-      L.shortLeg.scale.set(p.thighR * 1.14, 0.085, p.thighR * 1.14);
-      L.shortLeg.position.y = -0.145;
+      L.shortLeg.scale.set(p.thighR * 1.16, 0.105, p.thighR * 1.16);
+      L.shortLeg.position.y = -0.115;
       L.knee.position.y = -0.405;
       setLimb(L.shin, p.calfR * 0.92, 0.39);
       L.foot.scale.set(0.088, 0.062, 0.225);
