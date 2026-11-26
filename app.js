@@ -86,10 +86,10 @@ function morphTargets(r) {
     hipW: 0.145 + 0.026 * fat + 0.005 * mus,
     hipD: 0.095 + 0.014 * fat,
     thighR: 0.074 + 0.018 * fat - 0.001 * mus,
-    armR: 0.037 + 0.008 * fat + 0.013 * mus,
+    armR: 0.040 + 0.009 * fat + 0.014 * mus,
     calfR: 0.045 + 0.008 * fat + 0.006 * mus,
     neckR: 0.048 + 0.008 * fat,
-    headW: 0.088 + 0.008 * fat,
+    headW: 0.095 + 0.008 * fat,
     faceFull: fat,
   };
 }
@@ -722,8 +722,8 @@ class Character3D {
       { t: 0.44, rx: p.waistW * 0.99, rz: p.waistD + (p.bellyD - p.waistD) * 0.42, z: p.belly * 0.5 },
       { t: 0.62, rx: (p.waistW + p.shoulder) * 0.54, rz: p.chestD, z: 0.004 },
       { t: 0.84, rx: p.shoulder * 1.00, rz: p.chestD, z: 0 },
-      { t: 0.93, rx: p.shoulder * 0.86, rz: p.chestD * 0.86, z: 0 },
-      { t: 1.00, rx: p.shoulder * 0.54, rz: p.chestD * 0.64, z: 0 },
+      { t: 0.93, rx: p.shoulder * 0.94, rz: p.chestD * 0.88, z: 0 },
+      { t: 1.00, rx: p.shoulder * 0.60, rz: p.chestD * 0.70, z: 0 },
     ];
     return t => {
       let i = 0;
@@ -740,7 +740,7 @@ class Character3D {
   }
 
   _applyLimbScale(p) {
-    const torsoH = 0.59;
+    const torsoH = 0.60;
     this.torsoH = torsoH;
 
     updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
@@ -751,17 +751,17 @@ class Character3D {
 
     // 머리
     const R = p.headW;
-    this.headShape.scale.set(R, R * 1.24, R * 1.05);
-    this.headShape.position.y = 0.105;
-    this.head.position.y = torsoH + 0.075;
+    this.headShape.scale.set(R, R * 1.20, R * 1.04);
+    this.headShape.position.y = 0.10;
+    this.head.position.y = torsoH + 0.055;
 
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.97 + p.armR * 0.45);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.90 + p.armR * 0.40);
       a.shoulder.position.y = torsoH * 0.84;
-      a.deltoid.scale.set(p.armR * 1.22, p.armR * 1.38, p.armR * 1.18);
-      a.deltoid.position.set(0, p.armR * 0.10, 0);
+      a.deltoid.scale.set(p.armR * 1.45, p.armR * 1.75, p.armR * 1.40);
+      a.deltoid.position.set(a.sgn * p.armR * 0.10, -p.armR * 0.30, 0);
       setLimb(a.upper, p.armR, 0.30);
       a.elbow.position.y = -0.295;
       setLimb(a.fore, p.armR * 0.88, 0.28);
@@ -773,7 +773,7 @@ class Character3D {
     updateTube(this.shortsGeo, t => {
       const w = lerp(1.03, 1.07, t);
       return { rx: p.hipW * w, rz: p.hipD * w, z: 0 };
-    }, -0.21, 0.24);
+    }, -0.195, 0.225);
 
     // 다리
     for (const side of ['L', 'R']) {
@@ -796,15 +796,15 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: 0.115, shRx: 0, shRz: -0.115, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: 0.16, shRx: 0, shRz: -0.16, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = 0.115 + b * 0.012;
-      p.shRz = -0.115 - b * 0.012;
+      p.shLz = 0.16 + b * 0.010;
+      p.shRz = -0.16 - b * 0.010;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
@@ -822,7 +822,7 @@ class Character3D {
       p.kneeRx = 0.10 + Math.max(0, -Math.sin(ph + Math.PI - 0.5)) * 0.85;
       p.shLx = -s * 0.42;
       p.shRx = s * 0.42;
-      p.shLz = 0.10; p.shRz = -0.10;
+      p.shLz = 0.14; p.shRz = -0.14;
       p.elLx = 0.22 + Math.max(0, s) * 0.3;
       p.elRx = 0.22 + Math.max(0, -s) * 0.3;
       p.bodyY = Math.abs(c) * 0.012 - 0.006;
