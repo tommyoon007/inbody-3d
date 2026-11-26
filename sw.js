@@ -1,10 +1,5 @@
-const CACHE = 'inbody3d-v1';
-const SHELL = [
-  './',
-  './index.html',
-  './styles.css',
-  './app.js',
-  './manifest.json',
+const CACHE = 'inbody3d-v2';
+const IMG = [
   './assets/body-current.png',
   './assets/body-goal.png',
   './assets/face-tex.png',
@@ -13,7 +8,7 @@ const SHELL = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(IMG)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -24,27 +19,29 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  if (e.request.method !== 'GET') return;
-  // 데이터는 항상 최신 우선, 실패하면 캐시
-  if (url.pathname.endsWith('/data.json')) {
-    e.respondWith(
-      fetch(e.request).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
-        return res;
-      }).catch(() => caches.match(e.request))
-    );
+  const req = e.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
+
+  // 이미지는 캐시 우선 (변경 시 CACHE 버전을 올립니다)
+  if (/\.(png|jpg|jpeg|webp|svg|ico)$/.test(url.pathname)) {
+    e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+      const copy = res.clone();
+      caches.open(CACHE).then(c => c.put(req, copy));
+      return res;
+    })));
     return;
   }
-  // 그 외: 캐시 우선
+
+  // HTML·JS·CSS·JSON은 항상 최신 우선, 오프라인일 때만 캐시
   e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
-      if (res.ok && url.origin === location.origin) {
+    fetch(req, { cache: 'no-store' })
+      .then(res => {
         const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
-      }
-      return res;
-    }).catch(() => caches.match(e.request)))
+        caches.open(CACHE).then(c => c.put(req, copy));
+        return res;
+      })
+      .catch(() => caches.match(req).then(hit => hit || caches.match('./index.html')))
   );
 });
