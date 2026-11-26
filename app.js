@@ -620,10 +620,10 @@ class Character3D {
       this.faceReady = true;
     });
     this.faceTex = tex;
-    const FACE_ARC = 2.55;
+    const FACE_ARC = 2.10;
     const faceGeo = new THREE.SphereGeometry(1.012, 56, 44,
       Math.PI / 2 - FACE_ARC / 2, FACE_ARC,
-      0.30, 1.70);
+      0.34, 1.88);
     this.faceMat = new THREE.MeshStandardMaterial({
       map: tex, transparent: true, alphaTest: 0.45,
       roughness: 0.78, metalness: 0.0,
