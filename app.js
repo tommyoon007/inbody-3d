@@ -1,6 +1,8 @@
 /* =========================================================
    1. 데이터
    ========================================================= */
+import { MOVES } from './moves.js';
+
 const HEIGHT_CM = 176;
 const STORE_KEY = 'inbody3d.records.v1';
 const IMG_SOURCE_DATE = '2026-10-26'; // assets/body-current.webp 를 만든 측정일
@@ -172,10 +174,15 @@ const TIPS = {
     why: r =>
       `복부지방률 <b>${fmt(waistOf(r), 2)}</b> · 내장지방 <b>${fmt(visceralOf(r), 0)}레벨</b> · 체지방률 <b>${fmt(r.bodyFatPct)}%</b><br>` +
       '내장지방은 배 안쪽 장기 사이에 쌓여 혈압·혈당 문제로 가장 먼저 이어지는 지방입니다.',
-    tips: [
-      '주 3~4회 중강도 유산소 30~45분 — 빠르게 걷기(시속 6km), 인클라인 트레드밀(경사 8~12%), 실내자전거',
-      '식후 10~15분 가벼운 산책 — 식후 혈당·중성지방 상승을 눌러 줍니다',
-      '강도는 “숨이 차지만 대화는 가능한” 수준(RPE 5~6), 주 150~250분 누적이 목표',
+    moves: [
+      { id: 'walk', name: '빠르게 걷기', reps: '시속 6km · 30~45분' },
+      { id: 'incline', name: '인클라인 트레드밀', reps: '경사 8~12% · 30분' },
+      { id: 'bike', name: '실내자전거', reps: '30~45분' },
+      { id: 'postmeal', name: '식후 산책', reps: '식후 10~15분' },
+    ],
+    notes: [
+      '주 3~4회 중강도 유산소, 주 150~250분 누적이 목표',
+      '강도는 “숨이 차지만 대화는 가능한” 수준(RPE 5~6)',
       '복부만 골라 빠지지는 않으므로 유산소 + 식사량 조절을 함께 (야식·음주 줄이기)',
     ],
   },
@@ -189,11 +196,16 @@ const TIPS = {
       `골격근량 <b>${fmt(r.skeletalMuscle)}kg</b> · 골격근/체중 <b>${fmt(musclePct(r))}%</b>(표준 42~45%)` +
       (r.bmr ? ` · 기초대사량 <b>${fmt(r.bmr, 0)}kcal</b>` : '') +
       '<br>허벅지·엉덩이 같은 큰 근육을 쓰면 기초대사량이 올라 가만히 있어도 지방 연소가 빨라집니다.',
-    tips: [
-      '주 2회 하체 근력 — 스쿼트 3세트×10~12회, 레그프레스 3×12, 런지 2×10(양쪽)',
-      '세트 사이 60~90초 휴식, “마지막 2회가 힘든” 무게로 자세 우선',
+    moves: [
+      { id: 'squat', name: '스쿼트', reps: '3세트 × 10~12회' },
+      { id: 'legpress', name: '레그프레스', reps: '3세트 × 12회' },
+      { id: 'lunge', name: '런지', reps: '2세트 × 10회 (양쪽)' },
+      { id: 'stairs', name: '계단·언덕 걷기', reps: '일상에 섞기' },
+    ],
+    notes: [
+      '주 2회 하체 근력, 세트 사이 60~90초 휴식',
+      '“마지막 2회가 힘든” 무게로 자세 우선',
       '근육 손실 방지용 단백질 — 체중 1kg당 1.2~1.6g (하루 약 105~140g)',
-      '계단·언덕 걷기를 일상에 섞으면 하체 자극과 유산소를 동시에',
     ],
   },
   upper: {
@@ -204,10 +216,15 @@ const TIPS = {
     why: r =>
       `골격근/체중 <b>${fmt(musclePct(r))}%</b> · 인바디점수 <b>${scoreOf(r)}점</b><br>` +
       '등·어깨를 키우면 허리가 상대적으로 좁아져 역삼각형 라인이 살고, 코어가 받쳐 주면 자세와 허리 부담이 줄어듭니다.',
-    tips: [
-      '랫풀다운 3×10, 시티드 로우 3×12 — 등 근육으로 어깨 라인 만들기',
-      '플랭크 30~45초×3, 데드버그 10회×3 — 허리 부담 없이 복부 코어 강화',
-      '푸시업·숄더프레스로 가슴·어깨 균형 맞추기 (주 2회)',
+    moves: [
+      { id: 'pulldown', name: '랫풀다운', reps: '3세트 × 10회' },
+      { id: 'row', name: '시티드 로우', reps: '3세트 × 12회' },
+      { id: 'shoulderpress', name: '숄더프레스', reps: '주 2회' },
+      { id: 'pushup', name: '푸시업', reps: '주 2회' },
+      { id: 'plank', name: '플랭크', reps: '30~45초 × 3' },
+      { id: 'deadbug', name: '데드버그', reps: '10회 × 3' },
+    ],
+    notes: [
       '어깨를 뒤로 모으는 자세를 의식하면 등 근육이 제대로 쓰입니다',
     ],
   },
@@ -217,7 +234,24 @@ function musclePct(r) {
   return (r.skeletalMuscle / r.weight) * 100;
 }
 
+let tipsKey = null;
+
+function moveTiles(moves) {
+  return `<div class="move-grid">${moves.map(mv => `
+      <div class="move">
+        <div class="move-art">${MOVES[mv.id] || ''}</div>
+        <div class="move-name">${mv.name}</div>
+        ${mv.reps ? `<div class="move-reps">${mv.reps}</div>` : ''}
+      </div>`).join('')}</div>`;
+}
+
+function moveNotes(notes) {
+  return `<ul class="tip-notes">${notes.map(n => `<li>${n}</li>`).join('')}</ul>`;
+}
+
 function renderTips(r) {
+  if (r === tipsKey) return;
+  tipsKey = r;
   const ranked = Object.entries(TIPS)
     .map(([id, lib]) => ({ id, lib, s: lib.score(r) }))
     .sort((a, b) => b.s - a.s);
@@ -234,12 +268,15 @@ function renderTips(r) {
       <div class="tip p0">
         <div class="tip-top"><span class="tip-rank">${r.goal ? 'GOAL' : '유지'}</span><span class="tip-title">유지 · 강화 모드</span></div>
         <p class="tip-why">${why}</p>
-        <ul>
-          <li>전신 근력 주 3회(각 40분)로 지금 근육량 유지 — 하체·등 위주</li>
-          <li>유산소는 주 2회 20~30분이면 충분, 근력 운동과 같은 날은 뒤에 배치</li>
-          <li>단백질은 체중 1kg당 1.2~1.6g 유지, 수분 하루 2L</li>
-          <li>월 1회 인바디 재측정으로 체지방률 ±1% 안에서 관리</li>
-        </ul>
+        ${moveTiles([
+          { id: 'fullbody', name: '전신 근력', reps: '주 3회 · 각 40분' },
+          { id: 'bike', name: '유산소', reps: '주 2회 20~30분' },
+        ])}
+        ${moveNotes([
+          '근력 운동과 유산소를 같은 날 할 때는 근력을 먼저, 유산소를 뒤에',
+          '단백질은 체중 1kg당 1.2~1.6g 유지, 수분 하루 2L',
+          '월 1회 인바디 재측정으로 체지방률 ±1% 안에서 관리',
+        ])}
       </div>`;
     $('#week-plan').innerHTML = buildWeek([], true)
       .map(w => `<span class="${w.k}"><b>${w.d}</b>${w.t}</span>`).join('');
@@ -251,7 +288,8 @@ function renderTips(r) {
     <div class="tip p${i + 1}">
       <div class="tip-top"><span class="tip-rank">${i + 1}순위</span><span class="tip-title">${t.lib.title}</span></div>
       <p class="tip-why">${t.lib.why(r)}</p>
-      <ul>${t.lib.tips.map(x => `<li>${x}</li>`).join('')}</ul>
+      ${moveTiles(t.lib.moves)}
+      ${moveNotes(t.lib.notes)}
     </div>`).join('');
 
   $('#week-plan').innerHTML = buildWeek(top.map(t => t.id), false)
@@ -312,6 +350,154 @@ function renderTable() {
   $('#cmp-table').innerHTML = head + `<tbody>${body}</tbody>`;
 }
 
+/* ---------- 수치 변화 그래프 ---------- */
+const METRICS = [
+  { id: 'weight', name: '체중', unit: 'kg', digits: 1, lower: true, get: r => r.weight },
+  { id: 'skeletalMuscle', name: '골격근량', unit: 'kg', digits: 1, lower: false, get: r => r.skeletalMuscle },
+  { id: 'bodyFatPct', name: '체지방률', unit: '%', digits: 1, lower: true, get: r => r.bodyFatPct },
+  { id: 'bodyFatMass', name: '체지방량', unit: 'kg', digits: 1, lower: true, get: fatMassOf },
+  { id: 'bmi', name: 'BMI', unit: '', digits: 1, lower: true, get: bmiOf },
+  { id: 'waistRatio', name: '복부지방률', unit: '', digits: 2, lower: true, get: waistOf },
+  { id: 'visceralFat', name: '내장지방', unit: '레벨', digits: 0, lower: true, get: visceralOf },
+  { id: 'score', name: '인바디점수', unit: '점', digits: 0, lower: false, get: scoreOf },
+];
+
+let chartMetric = 'weight';
+let chartSig = '';
+let chartObserver = null;
+
+function renderChartTabs() {
+  const el = document.getElementById('chart-tabs');
+  if (!el || el.dataset.ready) return;
+  el.innerHTML = METRICS.map(m =>
+    `<button class="chart-tab${m.id === chartMetric ? ' on' : ''}" data-metric="${m.id}" role="tab">${m.name}</button>`).join('');
+  el.addEventListener('click', e => {
+    const b = e.target.closest('[data-metric]');
+    if (!b) return;
+    chartMetric = b.dataset.metric;
+    [...el.children].forEach(c => c.classList.toggle('on', c === b));
+    chartSig = '';
+    renderChart();
+  });
+  el.dataset.ready = '1';
+}
+
+function observeChart() {
+  const host = document.getElementById('chart-plot');
+  if (!host || chartObserver) return;
+  chartObserver = new ResizeObserver(() => {
+    clearTimeout(host._t);
+    host._t = setTimeout(() => renderChart(), 120);
+  });
+  chartObserver.observe(host);
+}
+
+function renderChart() {
+  const host = document.getElementById('chart-plot');
+  const sum = document.getElementById('chart-sum');
+  if (!host) return;
+
+  const m = METRICS.find(x => x.id === chartMetric) || METRICS[0];
+  const meas = state.records.filter(r => !r.goal && m.get(r) != null);
+  const goal = state.records.find(r => r.goal);
+  const goalV = goal && m.get(goal) != null ? m.get(goal) : null;
+
+  const W = Math.max(240, Math.round(host.clientWidth || 320));
+  const sig = [m.id, W, m.digits, meas.map(r => `${r.date}:${m.get(r)}`).join(','), goalV].join('|');
+  if (sig === chartSig) return;
+  chartSig = sig;
+
+  if (!meas.length) {
+    host.innerHTML = '<p class="chart-empty">표시할 측정 기록이 없습니다.</p>';
+    if (sum) sum.innerHTML = '';
+    return;
+  }
+
+  const digits = v => (m.digits ? Number(v).toFixed(m.digits) : String(Math.round(v)));
+  const H = W < 420 ? 190 : 214;
+  const padL = m.digits === 0 ? 26 : 34;
+  const padR = 10, padT = 26, padB = 24;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const vals = meas.map(m.get);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  if (vals.length === 1) {
+    const p = Math.max(0.5, Math.abs(lo) * 0.02);
+    lo -= p; hi += p;
+  } else {
+    const p = Math.max((hi - lo) * 0.35, Math.abs(hi) * 0.004, 0.05);
+    lo -= p; hi += p;
+  }
+  const yOf = v => padT + (1 - (v - lo) / (hi - lo)) * plotH;
+  const n = meas.length;
+  const xOf = i => (n === 1 ? padL + plotW / 2 : padL + (plotW * i) / (n - 1));
+
+  /* 눈금 + 축 라벨 */
+  const ticks = [0, 0.5, 1].map(t => lo + (hi - lo) * t);
+  const grid = ticks.map((t, i) => {
+    const yy = yOf(t).toFixed(1);
+    return `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}" stroke="rgba(255,255,255,${i === 1 ? 0.05 : 0.08})" stroke-width="1"/>` +
+      `<text x="${padL - 7}" y="${(Number(yy) + 3.2).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#7f8c9d">${digits(t)}</text>`;
+  }).join('');
+
+  /* 목표선 (그래프 범위 안에 있을 때만) */
+  let goalEl = '';
+  if (goalV != null && goalV >= lo && goalV <= hi) {
+    const gy = yOf(goalV).toFixed(1);
+    goalEl = `<line x1="${padL}" y1="${gy}" x2="${W - padR}" y2="${gy}" stroke="#6aa9ff" stroke-width="1.4" stroke-dasharray="4 4" opacity=".7"/>` +
+      `<text x="${W - padR}" y="${(Number(gy) - 5).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#9dc0ff">목표 ${digits(goalV)}${m.unit}</text>`;
+  }
+
+  /* 선 + 영역 */
+  const pts = meas.map((r, i) => [xOf(i), yOf(m.get(r))]);
+  const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+  const baseY = (padT + plotH).toFixed(1);
+  const area = n > 1
+    ? `<path d="${line}L${pts[n - 1][0].toFixed(1)} ${baseY}L${pts[0][0].toFixed(1)} ${baseY}Z" fill="url(#chartArea)"/>`
+    : '';
+  const stroke = n > 1
+    ? `<path d="${line}" fill="none" stroke="#2ee6a8" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`
+    : '';
+
+  /* 점 + 수치 라벨 + 날짜 라벨 */
+  const dots = meas.map((r, i) => {
+    const [x, y] = pts[i];
+    const last = i === n - 1;
+    const anchor = n === 1 ? 'middle' : (i === 0 ? 'start' : (last ? 'end' : 'middle'));
+    const dot = `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${last ? 4.4 : 3.4}" fill="#0d1219" stroke="#2ee6a8" stroke-width="2.2"/>` +
+      (last ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="8.5" fill="#2ee6a8" opacity=".14"/>` : '');
+    const vx = Math.min(W - 12, Math.max(12, x));
+    const label = `<text x="${vx.toFixed(1)}" y="${(y - 9).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="${last ? '#2ee6a8' : '#e9eef5'}">${digits(m.get(r))}</text>`;
+    const dx = anchor === 'start' ? Math.max(padL, x) : (anchor === 'end' ? Math.min(W - padR, x) : x);
+    const dt = `<text x="${dx.toFixed(1)}" y="${H - 8}" text-anchor="${anchor}" font-size="9.5" fill="#8c9aad">${shortDate(r)}</text>`;
+    return dot + label + dt;
+  }).join('');
+
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${m.name} 변화 그래프">
+    <defs><linearGradient id="chartArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2ee6a8" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#2ee6a8" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${grid}${goalEl}${area}${stroke}${dots}
+    <text x="${W - padR}" y="13" text-anchor="end" font-size="9.5" fill="#7f8c9d">${m.unit || m.name}</text>
+  </svg>`;
+
+  /* 요약 */
+  if (sum) {
+    const a = m.get(meas[0]), b = m.get(meas[n - 1]);
+    const d = b - a;
+    const good = m.lower ? d < 0 : d > 0;
+    let html = `<span>${shortDate(meas[0])} → ${shortDate(meas[n - 1])}</span>` +
+      `<b>${digits(a)}${m.unit} → ${digits(b)}${m.unit}</b>`;
+    if (n > 1 && Math.abs(d) > 1e-9) {
+      html += `<span class="delta ${good ? 'good' : 'bad'}">${d > 0 ? '+' : ''}${digits(d)}${m.unit}</span>`;
+    }
+    if (goalV != null) html += `<span class="goal">목표 ${digits(goalV)}${m.unit}</span>`;
+    sum.innerHTML = html;
+  }
+}
+
 function renderGallery() {
   const rs = state.records;
   $('#card-count').textContent = `${rs.length}개`;
@@ -357,6 +543,7 @@ function renderRecordList() {
 function refreshUI() {
   renderStats();
   renderTable();
+  renderChart();
   renderGallery();
   renderRecordList();
   $('#date-slider').max = String(Math.max(1, state.records.length - 1));
@@ -578,6 +765,9 @@ async function init() {
   initData();
   initCompare();
   initSheet();
+  renderChartTabs();
+  observeChart();
+  renderChart();
 
   document.querySelectorAll('.tab').forEach(t =>
     t.addEventListener('click', () => switchMode(t.dataset.tab)));
