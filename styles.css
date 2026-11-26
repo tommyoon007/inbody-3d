@@ -514,3 +514,256 @@ input[type="range"]::-moz-range-thumb {
 
 /* 카드가 표 때문에 화면 밖으로 넓어지지 않게 (표는 카드 안에서 가로 스크롤) */
 .card { min-width: 0; }
+
+/* =========================================================
+   운동 동작 애니메이션 (v70)
+   - moves.js의 관절 <g>를 회전·이동시켜 실제 동작처럼 무한 반복
+   - transform-origin은 72×72 뷰박스 좌표(관절 위치)
+   - prefers-reduced-motion 사용자는 정지 그림으로
+   ========================================================= */
+.move-art svg [class] { transform-box: view-box; }
+
+/* 화살표: 동작 방향으로 살짝 맥동 */
+.mv .arw { animation: arwPulse 1.9s ease-in-out infinite; }
+@keyframes arwPulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+.mv .arw-r { animation: nudgeR 1.7s ease-in-out infinite; }
+.mv .arw-l { animation: nudgeL 1.7s ease-in-out infinite; }
+.mv .arw-u { animation: nudgeU 1.6s ease-in-out infinite; }
+.mv .arw-d { animation: nudgeD 1.6s ease-in-out infinite; }
+.mv .arw-b { animation: nudgeB 1.7s ease-in-out infinite; }
+@keyframes nudgeR {
+  0%, 100% { transform: translateX(-1.2px); opacity: .5; }
+  50% { transform: translateX(1.4px); opacity: 1; }
+}
+@keyframes nudgeL {
+  0%, 100% { transform: translateX(1.2px); opacity: .5; }
+  50% { transform: translateX(-1.4px); opacity: 1; }
+}
+@keyframes nudgeU {
+  0%, 100% { transform: translateY(1.4px); opacity: .5; }
+  50% { transform: translateY(-1.4px); opacity: 1; }
+}
+@keyframes nudgeD {
+  0%, 100% { transform: translateY(-1.2px); opacity: .5; }
+  50% { transform: translateY(1.2px); opacity: 1; }
+}
+@keyframes nudgeB {
+  0%, 100% { transform: translateY(-1.1px); opacity: .5; }
+  50% { transform: translateY(1.3px); opacity: 1; }
+}
+
+/* 자극 부위 표시 맥동 */
+.mv .glow { animation: glowPulse 2.4s ease-in-out infinite; }
+@keyframes glowPulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+
+/* ---------- 걷기 · 식후 산책 ---------- */
+.mv-walk .w-body { animation: bobFast 1.15s ease-in-out infinite; }
+@keyframes bobFast {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.3px); }
+}
+.mv-walk .w-leg-a { transform-origin: 33px 38px; animation: sw 1.15s ease-in-out infinite alternate; }
+.mv-walk .w-shin-a { transform-origin: 41px 47px; animation: kn 1.15s ease-in-out infinite alternate; }
+.mv-walk .w-leg-b { transform-origin: 33px 38px; animation: sw 1.15s ease-in-out infinite alternate-reverse; }
+.mv-walk .w-shin-b { transform-origin: 27px 49px; animation: kn 1.15s ease-in-out infinite alternate-reverse; }
+.mv-walk .w-arm-a { transform-origin: 35px 25px; animation: armSw 1.15s ease-in-out infinite alternate-reverse; }
+.mv-walk .w-fore-a { transform-origin: 41px 30px; animation: foreSw 1.15s ease-in-out infinite alternate; }
+.mv-walk .w-arm-b { transform-origin: 34px 25px; animation: armSw 1.15s ease-in-out infinite alternate; }
+.mv-walk .w-fore-b { transform-origin: 28px 30px; animation: foreSw 1.15s ease-in-out infinite alternate-reverse; }
+@keyframes sw { from { transform: rotate(-13deg); } to { transform: rotate(13deg); } }
+@keyframes kn { from { transform: rotate(3deg); } to { transform: rotate(26deg); } }
+@keyframes armSw { from { transform: rotate(-11deg); } to { transform: rotate(11deg); } }
+@keyframes foreSw { from { transform: rotate(-6deg); } to { transform: rotate(9deg); } }
+
+.mv-postmeal .p-body { animation: bobSlow 2.6s ease-in-out infinite; }
+@keyframes bobSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+.mv-postmeal .p-leg-a { transform-origin: 33px 38px; animation: swP 2.6s ease-in-out infinite alternate; }
+.mv-postmeal .p-shin-a { transform-origin: 40px 47px; animation: knP 2.6s ease-in-out infinite alternate; }
+.mv-postmeal .p-leg-b { transform-origin: 33px 38px; animation: swP 2.6s ease-in-out infinite alternate-reverse; }
+.mv-postmeal .p-shin-b { transform-origin: 28px 49px; animation: knP 2.6s ease-in-out infinite alternate-reverse; }
+.mv-postmeal .p-arm-a { transform-origin: 35px 25px; animation: armP 2.6s ease-in-out infinite alternate-reverse; }
+.mv-postmeal .p-fore-a { transform-origin: 40px 30px; animation: foreSw 2.6s ease-in-out infinite alternate; }
+.mv-postmeal .p-arm-b { transform-origin: 34px 25px; animation: armP 2.6s ease-in-out infinite alternate; }
+.mv-postmeal .p-fore-b { transform-origin: 29px 30px; animation: foreSw 2.6s ease-in-out infinite alternate-reverse; }
+.mv-postmeal .p-clock { transform-origin: 59px 14px; animation: clockTick 2.6s ease-in-out infinite; }
+@keyframes swP { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@keyframes knP { from { transform: rotate(2deg); } to { transform: rotate(18deg); } }
+@keyframes armP { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+@keyframes clockTick {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.09); }
+}
+
+/* ---------- 인클라인 트레드밀 ---------- */
+.mv-incline .i-body { animation: bobRun .95s ease-in-out infinite; }
+@keyframes bobRun {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1.5px); }
+}
+.mv-incline .i-leg-a { transform-origin: 32px 40px; animation: runT .95s ease-in-out infinite alternate; }
+.mv-incline .i-shin-a { transform-origin: 40px 47px; animation: runS .95s ease-in-out infinite alternate; }
+.mv-incline .i-leg-b { transform-origin: 32px 40px; animation: runT .95s ease-in-out infinite alternate-reverse; }
+.mv-incline .i-shin-b { transform-origin: 25px 51px; animation: runS .95s ease-in-out infinite alternate-reverse; }
+.mv-incline .i-arm-a { transform-origin: 31px 27px; animation: armRun .95s ease-in-out infinite alternate-reverse; }
+.mv-incline .i-fore-a { transform-origin: 38px 33px; animation: foreSw .95s ease-in-out infinite alternate; }
+.mv-incline .i-arm-b { transform-origin: 30px 27px; animation: armRun .95s ease-in-out infinite alternate; }
+.mv-incline .i-fore-b { transform-origin: 23px 33px; animation: foreSw .95s ease-in-out infinite alternate-reverse; }
+@keyframes runT { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
+@keyframes runS { from { transform: rotate(2deg); } to { transform: rotate(32deg); } }
+@keyframes armRun { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+
+/* ---------- 실내자전거 (페달 회전) ---------- */
+.mv-bike .b-leg-a { transform-origin: 26px 34px; animation: pedalT 1.5s ease-in-out infinite alternate; }
+.mv-bike .b-shin-a { transform-origin: 37px 41px; animation: pedalS 1.5s ease-in-out infinite alternate; animation-delay: -0.38s; }
+.mv-bike .b-leg-b { transform-origin: 26px 34px; animation: pedalT 1.5s ease-in-out infinite alternate; animation-delay: -1.1s; }
+.mv-bike .b-shin-b { transform-origin: 34px 42px; animation: pedalS 1.5s ease-in-out infinite alternate; animation-delay: -1.48s; }
+.mv-bike .b-body { animation: bikeSway 1.5s ease-in-out infinite; }
+@keyframes pedalT { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+@keyframes pedalS { from { transform: rotate(-8deg); } to { transform: rotate(26deg); } }
+@keyframes bikeSway {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.6px); }
+}
+
+/* ---------- 계단 오르기 ---------- */
+.mv-stairs .s-body { animation: climbBob 1.3s ease-in-out infinite; }
+@keyframes climbBob {
+  0%, 100% { transform: translateY(0.6px); }
+  50% { transform: translateY(-1.2px); }
+}
+.mv-stairs .s-leg-a { transform-origin: 24px 40px; animation: stepT 1.3s ease-in-out infinite alternate; }
+.mv-stairs .s-shin-a { transform-origin: 35px 43px; animation: stepS 1.3s ease-in-out infinite alternate; }
+.mv-stairs .s-leg-b { transform-origin: 24px 40px; animation: stepT 1.3s ease-in-out infinite alternate-reverse; }
+.mv-stairs .s-shin-b { transform-origin: 17px 52px; animation: stepS 1.3s ease-in-out infinite alternate-reverse; }
+.mv-stairs .s-arm-a { transform-origin: 22px 29px; animation: armP 1.3s ease-in-out infinite alternate-reverse; }
+.mv-stairs .s-arm-b { transform-origin: 20px 30px; animation: armP 1.3s ease-in-out infinite alternate; }
+@keyframes stepT { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+@keyframes stepS { from { transform: rotate(2deg); } to { transform: rotate(24deg); } }
+
+/* ---------- 스쿼트 ---------- */
+.mv-squat .q-body { transform-origin: 34px 36px; animation: sqBody 2.8s ease-in-out infinite alternate; }
+.mv-squat .q-leg-a { transform-origin: 34px 36px; animation: sqThigh 2.8s ease-in-out infinite alternate; }
+.mv-squat .q-shin-a { transform-origin: 45px 42px; animation: sqShin 2.8s ease-in-out infinite alternate; }
+.mv-squat .q-leg-b { transform-origin: 34px 36px; animation: sqThighB 2.8s ease-in-out infinite alternate; }
+.mv-squat .q-shin-b { transform-origin: 44px 44px; animation: sqShinB 2.8s ease-in-out infinite alternate; }
+.mv-squat .q-arm { transform-origin: 31px 24px; animation: sqArm 2.8s ease-in-out infinite alternate; }
+@keyframes sqBody { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(4px) rotate(6deg); } }
+@keyframes sqThigh { from { transform: rotate(0deg); } to { transform: rotate(-27deg); } }
+@keyframes sqShin { from { transform: rotate(0deg); } to { transform: rotate(21deg); } }
+@keyframes sqThighB { from { transform: rotate(0deg); } to { transform: rotate(-24deg); } }
+@keyframes sqShinB { from { transform: rotate(0deg); } to { transform: rotate(19deg); } }
+@keyframes sqArm { from { transform: rotate(0deg); } to { transform: rotate(-8deg); } }
+
+/* ---------- 레그프레스 ---------- */
+.mv-legpress .l-legs { animation: lpPush 2.4s ease-in-out infinite alternate; }
+.mv-legpress .l-plate { animation: lpPlate 2.4s ease-in-out infinite alternate; }
+.mv-legpress .l-body { animation: lpBody 2.4s ease-in-out infinite alternate; }
+@keyframes lpPush { from { transform: translateX(0); } to { transform: translateX(3px); } }
+@keyframes lpPlate { from { transform: translateX(0); } to { transform: translateX(3.6px); } }
+@keyframes lpBody { from { transform: translateX(0); } to { transform: translateX(-1px); } }
+
+/* ---------- 런지 ---------- */
+.mv-lunge .u-body { animation: lungeBody 2.6s ease-in-out infinite alternate; }
+.mv-lunge .u-leg-a { transform-origin: 32px 34px; animation: lungeThigh 2.6s ease-in-out infinite alternate; }
+.mv-lunge .u-shin-a { transform-origin: 44px 38px; animation: lungeShin 2.6s ease-in-out infinite alternate; }
+.mv-lunge .u-leg-b { transform-origin: 32px 34px; animation: lungeThighB 2.6s ease-in-out infinite alternate; }
+.mv-lunge .u-shin-b { transform-origin: 23px 50px; animation: lungeShinB 2.6s ease-in-out infinite alternate; }
+.mv-lunge .u-arm-a { transform-origin: 31px 23px; animation: armP 2.6s ease-in-out infinite alternate; }
+.mv-lunge .u-arm-b { transform-origin: 34px 23px; animation: armP 2.6s ease-in-out infinite alternate-reverse; }
+@keyframes lungeBody { from { transform: translateY(0); } to { transform: translateY(3px); } }
+@keyframes lungeThigh { from { transform: rotate(0deg); } to { transform: rotate(-13deg); } }
+@keyframes lungeShin { from { transform: rotate(0deg); } to { transform: rotate(14deg); } }
+@keyframes lungeThighB { from { transform: rotate(0deg); } to { transform: rotate(7deg); } }
+@keyframes lungeShinB { from { transform: rotate(0deg); } to { transform: rotate(10deg); } }
+
+/* ---------- 랫풀다운 ---------- */
+.mv-pulldown .d-bar { animation: pdBar 2.6s ease-in-out infinite alternate; }
+.mv-pulldown .d-cable { transform-origin: 48px 10px; animation: pdCable 2.6s ease-in-out infinite alternate; }
+.mv-pulldown .d-body { animation: pdBody 2.6s ease-in-out infinite alternate; }
+.mv-pulldown .d-arm-a { transform-origin: 37px 41px; animation: pdArmA 2.6s ease-in-out infinite alternate; }
+.mv-pulldown .d-fore-a { transform-origin: 30px 34px; animation: pdForeA 2.6s ease-in-out infinite alternate; }
+.mv-pulldown .d-arm-b { transform-origin: 39px 41px; animation: pdArmB 2.6s ease-in-out infinite alternate; }
+.mv-pulldown .d-fore-b { transform-origin: 46px 34px; animation: pdForeB 2.6s ease-in-out infinite alternate; }
+@keyframes pdBar { from { transform: translateY(0); } to { transform: translateY(6px); } }
+@keyframes pdCable { from { transform: scaleY(1); } to { transform: scaleY(1.5); } }
+@keyframes pdBody { from { transform: translateY(0); } to { transform: translateY(0.8px); } }
+@keyframes pdArmA { from { transform: rotate(0deg); } to { transform: rotate(-13deg); } }
+@keyframes pdForeA { from { transform: rotate(0deg); } to { transform: rotate(30deg); } }
+@keyframes pdArmB { from { transform: rotate(0deg); } to { transform: rotate(13deg); } }
+@keyframes pdForeB { from { transform: rotate(0deg); } to { transform: rotate(-30deg); } }
+
+/* ---------- 시티드 로우 ---------- */
+.mv-row .r-torso { transform-origin: 24px 44px; animation: rowTorso 2.6s ease-in-out infinite alternate; }
+.mv-row .r-arm { transform-origin: 23px 31px; animation: rowArm 2.6s ease-in-out infinite alternate; }
+.mv-row .r-fore { transform-origin: 32px 35px; animation: rowFore 2.6s ease-in-out infinite alternate; }
+.mv-row .r-cable { transform-origin: 58px 34px; animation: rowCable 2.6s ease-in-out infinite alternate; }
+@keyframes rowTorso { from { transform: rotate(0deg); } to { transform: rotate(-5deg); } }
+@keyframes rowArm { from { transform: rotate(0deg); } to { transform: rotate(42deg); } }
+@keyframes rowFore { from { transform: rotate(0deg); } to { transform: rotate(-62deg); } }
+@keyframes rowCable { from { transform: scaleX(1); } to { transform: scaleX(1.4); } }
+
+/* ---------- 푸시업 ---------- */
+.mv-pushup .p-fig { animation: puBody 1.9s ease-in-out infinite alternate; }
+.mv-pushup .p-arm { transform-origin: 22px 40px; animation: puArm 1.9s ease-in-out infinite alternate; }
+.mv-pushup .p-fore { transform-origin: 21px 47px; animation: puFore 1.9s ease-in-out infinite alternate; }
+@keyframes puBody { from { transform: translateY(0); } to { transform: translateY(3px); } }
+@keyframes puArm { from { transform: rotate(0deg); } to { transform: rotate(-9deg); } }
+@keyframes puFore { from { transform: rotate(0deg); } to { transform: rotate(13deg); } }
+
+/* ---------- 숄더프레스 ---------- */
+.mv-shoulderpress .h-arm-a { transform-origin: 34px 26px; animation: spArmA 2.4s ease-in-out infinite alternate; }
+.mv-shoulderpress .h-fore-a { transform-origin: 26px 21px; animation: spForeA 2.4s ease-in-out infinite alternate; }
+.mv-shoulderpress .h-arm-b { transform-origin: 38px 26px; animation: spArmB 2.4s ease-in-out infinite alternate; }
+.mv-shoulderpress .h-fore-b { transform-origin: 46px 21px; animation: spForeB 2.4s ease-in-out infinite alternate; }
+.mv-shoulderpress .h-dumb-a { animation: spDumbA 2.4s ease-in-out infinite alternate; }
+.mv-shoulderpress .h-dumb-b { animation: spDumbB 2.4s ease-in-out infinite alternate; }
+@keyframes spArmA { from { transform: rotate(0deg); } to { transform: rotate(24deg); } }
+@keyframes spForeA { from { transform: rotate(0deg); } to { transform: rotate(-18deg); } }
+@keyframes spArmB { from { transform: rotate(0deg); } to { transform: rotate(-24deg); } }
+@keyframes spForeB { from { transform: rotate(0deg); } to { transform: rotate(18deg); } }
+@keyframes spDumbA { from { transform: translate(0, 0); } to { transform: translate(4.6px, -5px); } }
+@keyframes spDumbB { from { transform: translate(0, 0); } to { transform: translate(-4.6px, -5px); } }
+
+/* ---------- 플랭크 (코어 라인 맥동) ---------- */
+.mv-plank .k-fig { animation: plankBreath 3.6s ease-in-out infinite; }
+.mv-plank .k-core { animation: plankCore 3.6s ease-in-out infinite; }
+@keyframes plankBreath {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.7px); }
+}
+@keyframes plankCore {
+  0%, 100% { opacity: .3; stroke-dashoffset: 0; }
+  50% { opacity: .95; stroke-dashoffset: -8; }
+}
+
+/* ---------- 데드버그 ---------- */
+.mv-deadbug .x-arm-a { transform-origin: 17px 43px; animation: dbArmA 3s ease-in-out infinite alternate; }
+.mv-deadbug .x-arm-b { transform-origin: 16px 43px; animation: dbArmB 3s ease-in-out infinite alternate; }
+.mv-deadbug .x-leg-a { transform-origin: 33px 45px; animation: dbLegA 3s ease-in-out infinite alternate; }
+.mv-deadbug .x-shin-a { transform-origin: 33px 31px; animation: dbShinA 3s ease-in-out infinite alternate; }
+.mv-deadbug .x-leg-b { transform-origin: 33px 45px; animation: dbLegB 3s ease-in-out infinite alternate; }
+@keyframes dbArmA { from { transform: rotate(0deg); } to { transform: rotate(-28deg); } }
+@keyframes dbArmB { from { transform: rotate(0deg); } to { transform: rotate(16deg); } }
+@keyframes dbLegA { from { transform: rotate(0deg); } to { transform: rotate(26deg); } }
+@keyframes dbShinA { from { transform: rotate(0deg); } to { transform: rotate(-26deg); } }
+@keyframes dbLegB { from { transform: rotate(0deg); } to { transform: rotate(-14deg); } }
+
+/* ---------- 전신 근력 (바벨 스쿼트) ---------- */
+.mv-fullbody .f-body { animation: fbBody 2.8s ease-in-out infinite alternate; }
+.mv-fullbody .f-leg-a { transform-origin: 36px 40px; animation: fbLegA 2.8s ease-in-out infinite alternate; }
+.mv-fullbody .f-leg-b { transform-origin: 36px 40px; animation: fbLegB 2.8s ease-in-out infinite alternate; }
+@keyframes fbBody { from { transform: translateY(0); } to { transform: translateY(4px); } }
+@keyframes fbLegA { from { transform: rotate(0deg); } to { transform: rotate(5deg); } }
+@keyframes fbLegB { from { transform: rotate(0deg); } to { transform: rotate(-5deg); } }
+
+/* 움직임 최소화 설정을 켠 사용자는 정지 그림으로 */
+@media (prefers-reduced-motion: reduce) {
+  .move-art svg,
+  .move-art svg * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

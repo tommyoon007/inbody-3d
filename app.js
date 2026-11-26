@@ -1,7 +1,7 @@
 /* =========================================================
    1. 데이터
    ========================================================= */
-import { MOVES } from './moves.js';
+import { MOVES } from './moves.js?v=70';
 
 const HEIGHT_CM = 176;
 const STORE_KEY = 'inbody3d.records.v1';
