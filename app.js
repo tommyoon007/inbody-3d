@@ -609,7 +609,7 @@ class Character3D {
     this.headShape = new THREE.Group();
     this.head.add(this.headShape);
 
-    const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.955, 40, 30), this.mat.skin);
+    const headSphere = new THREE.Mesh(new THREE.SphereGeometry(0.90, 40, 30), this.mat.skin);
     headSphere.castShadow = true;
     this.headShape.add(headSphere);
 
@@ -620,10 +620,10 @@ class Character3D {
       this.faceReady = true;
     });
     this.faceTex = tex;
-    const FACE_ARC = 2.10;
-    const faceGeo = new THREE.SphereGeometry(1.012, 56, 44,
+    const FACE_ARC = 2.95;
+    const faceGeo = new THREE.SphereGeometry(1.012, 64, 48,
       Math.PI / 2 - FACE_ARC / 2, FACE_ARC,
-      0.34, 1.88);
+      0.28, 2.05);
     this.faceMat = new THREE.MeshStandardMaterial({
       map: tex, transparent: true, alphaTest: 0.45,
       roughness: 0.78, metalness: 0.0,
@@ -634,13 +634,13 @@ class Character3D {
 
     // 머리카락
     const hairTop = new THREE.Mesh(
-      new THREE.SphereGeometry(1.000, 40, 24, 0, Math.PI * 2, 0, 0.40),
+      new THREE.SphereGeometry(0.96, 40, 24, 0, Math.PI * 2, 0, 0.34),
       this.mat.hair
     );
     hairTop.castShadow = true;
     this.headShape.add(hairTop);
     const hairBack = new THREE.Mesh(
-      new THREE.SphereGeometry(1.002, 40, 24, Math.PI * 0.94, Math.PI * 1.12, 0.34, 1.05),
+      new THREE.SphereGeometry(0.97, 40, 24, Math.PI * 0.90, Math.PI * 1.20, 0.28, 1.15),
       this.mat.hair
     );
     this.headShape.add(hairBack);
