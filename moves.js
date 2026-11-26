@@ -6,11 +6,11 @@
      styles.css의 @keyframes가 그 <g>를 회전·이동시켜 실제 동작처럼 반복 재생
    ========================================================= */
 
-const INK = 'fill="none" stroke="#e8f0f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"';
-const INK2 = 'fill="none" stroke="#e8f0f8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".45"';
+const INK = 'fill="none" stroke="#e8f0f8" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"';
+const INK2 = 'fill="none" stroke="#e8f0f8" stroke-width="2.9" stroke-linecap="round" stroke-linejoin="round" opacity=".45"';
 const GEAR = 'fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"';
 const THIN = 'fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="2" stroke-linecap="round"';
-const MOVE = 'fill="none" stroke="#2ee6a8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+const MOVE = 'fill="none" stroke="#2ee6a8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"';
 
 const ground = (y = 66) =>
   `<path d="M6 ${y}H66" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="2" stroke-linecap="round"/>`;

@@ -1,7 +1,7 @@
 /* =========================================================
    1. 데이터
    ========================================================= */
-import { MOVES } from './moves.js?v=70';
+import { MOVES } from './moves.js?v=71';
 
 const HEIGHT_CM = 176;
 const STORE_KEY = 'inbody3d.records.v1';
@@ -238,7 +238,10 @@ let tipsKey = null;
 
 function moveTiles(moves) {
   return `<div class="move-grid">${moves.map(mv => `
-      <div class="move">
+      <div class="move" role="button" tabindex="0" data-move="${mv.id}" data-name="${mv.name}" data-reps="${mv.reps || ''}" aria-label="${mv.name} 동작 크게 보기">
+        <span class="move-zoom" aria-hidden="true">
+          <svg viewBox="0 0 16 16" fill="none" stroke="rgba(46,230,168,0.95)" stroke-width="1.7" stroke-linecap="round"><circle cx="6.6" cy="6.6" r="4.3"/><path d="M9.9 9.9l3.5 3.5"/></svg>
+        </span>
         <div class="move-art">${MOVES[mv.id] || ''}</div>
         <div class="move-name">${mv.name}</div>
         ${mv.reps ? `<div class="move-reps">${mv.reps}</div>` : ''}
@@ -248,6 +251,25 @@ function moveTiles(moves) {
 function moveNotes(notes) {
   return `<ul class="tip-notes">${notes.map(n => `<li>${n}</li>`).join('')}</ul>`;
 }
+
+/* ---------- 동작 가이드 모달 (큰 그림 + 쉬운 설명) ---------- */
+const MOVE_GUIDE = {
+  walk: '팔을 크게 흔들며 숨이 조금 찰 정도로 걸어요. 대화는 되지만 노래는 힘든 속도(시속 5~6km)가 알맞습니다.',
+  postmeal: '식사 후 10~15분 천천히 걸어요. 혈당이 급하게 오르는 것을 막아 주고 소화도 편해집니다.',
+  incline: '트레드밀 경사를 8~12%로 올리고 손잡이는 잡지 않아요. 무릎 부담은 적고 엉덩이·허벅지가 더 쓰입니다.',
+  bike: '안장은 서 있을 때 골반 높이에 맞춰요. 무릎이 완전히 펴지지 않을 만큼만 발을 돌립니다.',
+  stairs: '발 전체를 계단에 올리고 허리를 세워 올라가요. 내려올 때는 엘리베이터를 쓰면 무릎이 편합니다.',
+  squat: '의자에 앉듯 엉덩이를 뒤로 빼며 무릎을 굽혀요. 무릎이 발끝보다 앞으로 나가지 않게, 시선은 정면을 봅니다.',
+  legpress: '발바닥 전체로 발판을 밀고, 무릎을 끝까지 펴서 걸지 않아요. 되돌아올 때는 천천히 3초 동안.',
+  lunge: '한 발을 앞으로 내딛고 뒷무릎을 바닥 쪽으로 내려요. 앞무릎이 발끝보다 앞으로 나가지 않게 합니다.',
+  pulldown: '바를 잡고 어깨를 귀에서 멀어지게 내린 뒤, 팔꿈치를 옆구리 쪽으로 당겨요. 허리를 젖히지 말고 가슴을 폅니다.',
+  row: '손잡이를 배꼽 쪽으로 당기며 날개뼈를 등 가운데로 모아요. 어깨가 귀 쪽으로 올라가지 않게 합니다.',
+  pushup: '손을 어깨보다 조금 넓게 짚고 몸을 일직선으로 유지해요. 가슴이 바닥에 가까워질 때까지 내려가고, 힘들면 무릎을 대고 해도 됩니다.',
+  shoulderpress: '덤벨을 귀 옆에서 시작해 머리 위로 밀어 올려요. 허리가 꺾이지 않게 배에 힘을 주고 팔은 끝까지 펴지 않습니다.',
+  plank: '팔꿈치와 발끝으로 몸을 일직선으로 받쳐요. 엉덩이가 올라가거나 처지지 않게, 숨은 계속 쉬어 주세요.',
+  deadbug: '누워서 허리를 바닥에 붙이고 반대쪽 팔과 다리를 천천히 뻗어요. 허리가 뜨면 동작을 작게 줄이세요.',
+  fullbody: '바벨을 어깨에 얹고 앉았다 일어나요. 자세가 흐트러지지 않는 무게만 쓰고 가슴을 편 채로 합니다.',
+};
 
 function renderTips(r) {
   if (r === tipsKey) return;
@@ -758,6 +780,56 @@ function initSheet() {
   });
 }
 
+/* ---- 운동 동작 크게 보기 모달 ---- */
+function initMoveGuide() {
+  const backdrop = $('#move-modal');
+  if (!backdrop) return;
+  const art = $('#mm-art');
+  const title = $('#mm-title');
+  const reps = $('#mm-reps');
+  const desc = $('#mm-desc');
+  const link = $('#mm-link');
+  let lastTile = null;
+
+  const open = tile => {
+    const id = tile.dataset.move;
+    const name = tile.dataset.name || id;
+    art.innerHTML = MOVES[id] || '';
+    title.textContent = name;
+    const repsText = tile.dataset.reps || '';
+    reps.textContent = repsText;
+    reps.style.display = repsText ? '' : 'none';
+    desc.textContent = MOVE_GUIDE[id] || '천천히 자세를 확인하며 따라 해 보세요.';
+    link.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(name + ' 운동 자세');
+    lastTile = tile;
+    backdrop.classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    $('#mm-close').focus({ preventScroll: true });
+  };
+
+  const close = () => {
+    if (backdrop.classList.contains('hidden')) return;
+    backdrop.classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    if (lastTile && lastTile.focus) lastTile.focus({ preventScroll: true });
+  };
+
+  $('#mm-close').addEventListener('click', close);
+  backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { close(); return; }
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const tile = e.target && e.target.closest ? e.target.closest('.move[data-move]') : null;
+    if (!tile) return;
+    e.preventDefault();
+    open(tile);
+  });
+  document.addEventListener('click', e => {
+    const tile = e.target && e.target.closest ? e.target.closest('.move[data-move]') : null;
+    if (tile) open(tile);
+  });
+}
+
 async function initData(focusId) {
   await loadRecords();
   refreshUI();
@@ -777,6 +849,7 @@ async function init() {
   initData();
   initCompare();
   initSheet();
+  initMoveGuide();
   renderChartTabs();
   observeChart();
   renderChart();

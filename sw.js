@@ -1,4 +1,4 @@
-const CACHE = 'inbody3d-v10';
+const CACHE = 'inbody3d-v11';
 const IMG = [
   './assets/body-current.webp',
   './assets/body-goal.webp',
