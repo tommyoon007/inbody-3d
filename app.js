@@ -627,10 +627,10 @@ class Character3D {
       this.faceReady = true;
     });
     this.faceTex = tex;
-    const FACE_ARC = 2.05;
-    const faceGeo = new THREE.SphereGeometry(1.012, 48, 40,
+    const FACE_ARC = 2.55;
+    const faceGeo = new THREE.SphereGeometry(1.012, 56, 44,
       Math.PI / 2 - FACE_ARC / 2, FACE_ARC,
-      0.40, 1.42);
+      0.30, 1.70);
     this.faceMat = new THREE.MeshStandardMaterial({
       map: tex, transparent: true, alphaTest: 0.45,
       roughness: 0.78, metalness: 0.0,
@@ -641,7 +641,7 @@ class Character3D {
 
     // 머리카락
     const hairTop = new THREE.Mesh(
-      new THREE.SphereGeometry(1.045, 40, 24, 0, Math.PI * 2, 0, 1.12),
+      new THREE.SphereGeometry(1.035, 40, 24, 0, Math.PI * 2, 0, 0.95),
       this.mat.hair
     );
     hairTop.castShadow = true;
@@ -746,10 +746,10 @@ class Character3D {
     updateTube(this.torsoGeo, this._torsoProfile(p), 0, torsoH);
 
     // 가슴 볼륨: 근육량이 높을수록 크고 또렷, 지방이 많으면 부드럽게 퍼짐
-    const pecW = 0.048 + 0.022 * ((p.armR - 0.036) / 0.03) + 0.012 * ((p.chestD - 0.10) / 0.05);
+    const pecW = 0.021 + (p.chestD - 0.10) * 0.34 + (p.armR - 0.036) * 0.30;
     for (const { mesh, sgn } of this.pecs) {
-      mesh.scale.set(pecW, pecW * 0.78, pecW * 0.5);
-      mesh.position.set(sgn * pecW * 0.92, torsoH * 0.795, p.chestD * 0.78);
+      mesh.scale.set(pecW, pecW * 0.82, pecW * 0.42);
+      mesh.position.set(sgn * pecW * 0.95, torsoH * 0.785, p.chestD * 0.93);
     }
 
     // 목
@@ -759,13 +759,13 @@ class Character3D {
     // 머리
     const R = p.headW;
     this.headShape.scale.set(R, R * 1.24, R * 1.05);
-    this.headShape.position.y = 0.105;
-    this.head.position.y = torsoH + 0.085;
+    this.headShape.position.y = 0.10;
+    this.head.position.y = torsoH + 0.062;
 
     // 팔
     for (const side of ['L', 'R']) {
       const a = this.arms[side];
-      a.shoulder.position.x = a.sgn * (p.shoulder * 0.93);
+      a.shoulder.position.x = a.sgn * (p.shoulder * 0.90);
       a.shoulder.position.y = torsoH - 0.045;
       setLimb(a.upper, p.armR, 0.30);
       a.elbow.position.y = -0.295;
@@ -800,15 +800,15 @@ class Character3D {
 
   _poseTargets(dt) {
     const t = this.time;
-    const p = { shLx: 0, shLz: 0.11, shRx: 0, shRz: -0.11, elLx: 0.14, elRx: 0.14,
+    const p = { shLx: 0, shLz: 0.075, shRx: 0, shRz: -0.075, elLx: 0.14, elRx: 0.14,
       hipLx: 0, hipRx: 0, kneeLx: 0.05, kneeRx: 0.05,
       spineX: 0, spineY: 0, bodyY: 0, headX: 0, headY: 0, breath: 0 };
 
     if (state.anim === 'idle') {
       const b = Math.sin(t * 1.5);
       p.breath = b * 0.5;
-      p.shLz = 0.115 + b * 0.012;
-      p.shRz = -0.115 - b * 0.012;
+      p.shLz = 0.075 + b * 0.012;
+      p.shRz = -0.075 - b * 0.012;
       p.shLx = Math.sin(t * 0.7) * 0.045;
       p.shRx = Math.sin(t * 0.7 + 1.6) * 0.045;
       p.elLx = 0.16 + b * 0.02;
@@ -826,7 +826,7 @@ class Character3D {
       p.kneeRx = 0.10 + Math.max(0, -Math.sin(ph + Math.PI - 0.5)) * 0.85;
       p.shLx = -s * 0.42;
       p.shRx = s * 0.42;
-      p.shLz = 0.13; p.shRz = -0.13;
+      p.shLz = 0.10; p.shRz = -0.10;
       p.elLx = 0.22 + Math.max(0, s) * 0.3;
       p.elRx = 0.22 + Math.max(0, -s) * 0.3;
       p.bodyY = Math.abs(c) * 0.012 - 0.006;
